@@ -1,4 +1,6 @@
 import streamlit as st
+import json
+import datetime
 
 st.set_page_config(page_title="Pile Foundation Designer", layout="centered")
 
@@ -47,4 +49,19 @@ if st.button("Calculate Pile Capacity"):
     st.success(f"✅ Allowable Load per Pile: {capacity} kN")
     st.info(f"📏 Total Pile Length: {total_depth} m")
     st.warning(f"🔢 Required Number of Piles: {piles_needed}")
+
+
+if st.button("📦 Download Project File"):
+    project_data = {
+        "diameter": diameter,
+        "safety_factor": safety_factor,
+        "total_load": total_load,
+        "soil_layers": layers
+    }
+    json_string = json.dumps(project_data, indent=2)
+
+    filename = f"foundation_project_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+
+    st.download_button("⬇️ Download Project", data=json_string, file_name=filename, mime="application/json")
+
 
