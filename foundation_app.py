@@ -120,6 +120,19 @@ def generate_excel_data(piles_needed, capacity, pile_length, diameter, volume_pe
     df = pd.DataFrame(data)
     return df
 
+def pile_design_summary(diameter, length, sf, cohesion, load, cost_per_m3):
+    perimeter = 3.14 * diameter
+    skin = cohesion * perimeter * length
+    base = cohesion * 9 * (3.14 * (diameter / 2) ** 2)
+    ultimate = skin + base
+    allowable = ultimate / sf
+
+    pile_count = int((load / allowable) + 1)
+    volume = calculate_concrete_volume(diameter, length)
+    total_volume = volume * pile_count
+    cost = estimate_pile_cost(total_volume, cost_per_m3)
+
+    return round(allowable, 2), pile_count, round(volume, 2), round(cost, 2)
 
 def generate_pdf(project_data, result_text):
     from reportlab.pdfgen import canvas
@@ -259,6 +272,42 @@ if st.checkbox("📈 Show Load vs. Settlement Curve"):
         st.pyplot(fig)
     else:
         st.warning("⚠️ Please click 'Estimate Settlement' first.")
+
+st.subheader("🆚 Design Comparison")
+
+col1, col2 = st.columns(2)
+
+with col1:
+    st.markdown("### Design A")
+    d1 = st.number_input("Diameter A (m)", value=0.6, key="d1")
+    l1 = st.number_input("Length A (m)", value=20.0, key="l1")
+    sf1 = st.number_input("Safety Factor A", value=2.5, key="sf1")
+
+with col2:
+    st.markdown("### Design B")
+    d2 = st.number_input("Diameter B (m)", value=0.45, key="d2")
+    l2 = st.number_input("Length B (m)", value=25.0, key="l2")
+    sf2 = st.number_input("Safety Factor B", value=2.5, key="sf2")
+
+if st.button("Compare Designs"):
+    load = total_load
+    cohesion = 50  # For simplicity
+
+    cost_rate = 120.0  # USD/m³
+    a = pile_design_summary(d1, l1, sf1, cohesion, load, cost_rate)
+    b = pile_design_summary(d2, l2, sf2, cohesion, load, cost_rate)
+
+    st.write("### 📊 Comparison Table")
+    comp_df = pd.DataFrame({
+        "Metric": ["Allowable Capacity (kN)", "Pile Count", "Concrete per Pile (m³)", "Total Cost (USD)"],
+        "Design A": a,
+        "Design B": b
+    })
+
+    st.dataframe(comp_df)
+
+    st.success("✅ Design comparison complete. Choose wisely!")
+
 
 if st.button("📦 Download Project File"):
     project_data = {
