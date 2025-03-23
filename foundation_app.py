@@ -184,9 +184,6 @@ if st.button("Calculate Pile Capacity"):
         file_name="pile_design_summary.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
-    
-    st.subheader("📁 Load Saved Project")
-    uploaded_file = st.file_uploader("Upload your `.json` project file")
 
     # Prepare report content
     project_data = {
@@ -275,6 +272,9 @@ if st.button("📦 Download Project File"):
     filename = f"foundation_project_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
 
     st.download_button("⬇️ Download Project", data=json_string, file_name=filename, mime="application/json")
+
+st.subheader("📁 Load Saved Project")
+uploaded_file = st.file_uploader("Upload your `.json` project file")
 
 if uploaded_file is not None:
     loaded_data = json.load(uploaded_file)
