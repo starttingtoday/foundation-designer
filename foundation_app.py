@@ -147,13 +147,14 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
 ])
 
 with tab1:
+    
     # --- User Inputs ---
-    st.markdown("---")
     st.subheader("📌 Input Parameters")
     diameter = st.number_input("Pile Diameter (m)", value=0.6, step=0.05)
     safety_factor = st.number_input("Safety Factor", value=2.5)
     total_load = st.number_input("Total Building Load (kN)", value=1000)
-    
+
+    st.markdown("---")
     st.subheader("🧱 Soil Layers")
     layer_count = st.number_input("Number of Layers", min_value=1, max_value=5, value=2)
     layers = []
@@ -199,7 +200,6 @@ with tab1:
         st.download_button("📄 Download PDF Report", data=pdf_file, file_name="foundation_report.pdf", mime="application/pdf")
 
 with tab2:
-    st.markdown("---")
     if st.button("Show Pile Layout + Group Efficiency"):
         capacity, total_depth = calculate_capacity(diameter, safety_factor, layers)
         piles_needed = int((total_load / capacity) + 1)
@@ -218,7 +218,7 @@ with tab2:
         st.success(f"🧱 Total Group Capacity: {group_capacity} kN")
 
 with tab3:
-    st.markdown("---")
+    
     st.subheader("📉 Settlement Estimation")
     
     Es = st.number_input("Soil Modulus Es (kPa)", value=15000)
@@ -258,7 +258,6 @@ with tab3:
 
 with tab4:
     
-    st.markdown("---")
     st.subheader("🆚 Design Comparison")
     
     col1, col2 = st.columns(2)
