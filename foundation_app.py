@@ -121,6 +121,23 @@ def generate_pdf(project_data, result_text):
     buffer.seek(0)
     return buffer
 
+st.markdown(
+    """
+    Welcome to the **🌍 Pile Foundation Designer**!
+
+    This tool helps engineers, students, and designers calculate pile capacities, estimate costs, visualize layouts, and more — all in one clean interface.
+
+    👉 Use the tabs above to explore:
+    - 🧮 Structural design
+    - 📐 Layout & efficiency
+    - 📉 Settlement estimation
+    - 🆚 Compare options
+    - 💾 Export your project
+
+    Built with love and concrete. 🧱💙
+    """
+)
+
 tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "Design Calculator",
     "Layout & Efficiency",
@@ -131,6 +148,7 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
 
 with tab1:
     # --- User Inputs ---
+    st.markdown("---")
     st.subheader("📌 Input Parameters")
     diameter = st.number_input("Pile Diameter (m)", value=0.6, step=0.05)
     safety_factor = st.number_input("Safety Factor", value=2.5)
@@ -149,10 +167,12 @@ with tab1:
         layers.append({"type": soil, "cohesion": cohesion, "thickness": thickness})
     
     # --- Cost Input ---
+    st.markdown("---")
     st.subheader("💰 Concrete Cost")
     cost_rate = st.number_input("Cost per m³ of Concrete (USD)", value=120.0)
     
     # --- Buttons ---
+    st.markdown("---")
     if st.button("Calculate Pile Capacity"):
         capacity, total_depth = calculate_capacity(diameter, safety_factor, layers)
         piles_needed = int((total_load / capacity) + 1)
@@ -179,7 +199,7 @@ with tab1:
         st.download_button("📄 Download PDF Report", data=pdf_file, file_name="foundation_report.pdf", mime="application/pdf")
 
 with tab2:
-    
+    st.markdown("---")
     if st.button("Show Pile Layout + Group Efficiency"):
         capacity, total_depth = calculate_capacity(diameter, safety_factor, layers)
         piles_needed = int((total_load / capacity) + 1)
@@ -198,7 +218,7 @@ with tab2:
         st.success(f"🧱 Total Group Capacity: {group_capacity} kN")
 
 with tab3:
-    
+    st.markdown("---")
     st.subheader("📉 Settlement Estimation")
     
     Es = st.number_input("Soil Modulus Es (kPa)", value=15000)
@@ -238,6 +258,7 @@ with tab3:
 
 with tab4:
     
+    st.markdown("---")
     st.subheader("🆚 Design Comparison")
     
     col1, col2 = st.columns(2)
@@ -287,7 +308,8 @@ with tab5:
         filename = f"foundation_project_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
     
         st.download_button("⬇️ Download Project", data=json_string, file_name=filename, mime="application/json")
-    
+
+    st.markdown("---")
     st.subheader("📁 Load Saved Project")
     uploaded_file = st.file_uploader("Upload your `.json` project file")
     
