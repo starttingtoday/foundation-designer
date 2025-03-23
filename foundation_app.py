@@ -13,14 +13,6 @@ import pandas as pd
 st.set_page_config(page_title="Pile Foundation Designer", layout="centered")
 st.title("🌍 Pile Foundation Designer")
 
-tab1, tab2, tab3, tab4, tab5 = st.tabs([
-    "Design Calculator",
-    "Layout & Efficiency",
-    "Settlement",
-    "Compare Designs",
-    "Save / Export"
-])
-
 # --- Soil Types Dictionary ---
 soil_types = {
     "Soft Clay": 25,
@@ -129,53 +121,63 @@ def generate_pdf(project_data, result_text):
     buffer.seek(0)
     return buffer
 
-# --- User Inputs ---
-st.subheader("📌 Input Parameters")
-diameter = st.number_input("Pile Diameter (m)", value=0.6, step=0.05)
-safety_factor = st.number_input("Safety Factor", value=2.5)
-total_load = st.number_input("Total Building Load (kN)", value=1000)
+tab1, tab2, tab3, tab4, tab5 = st.tabs([
+    "Design Calculator",
+    "Layout & Efficiency",
+    "Settlement",
+    "Compare Designs",
+    "Save / Export"
+])
 
-st.subheader("🧱 Soil Layers")
-layer_count = st.number_input("Number of Layers", min_value=1, max_value=5, value=2)
-layers = []
-for i in range(int(layer_count)):
-    col1, col2 = st.columns(2)
-    with col1:
-        soil = st.selectbox(f"Soil Type - Layer {i+1}", list(soil_types.keys()), key=f"type_{i}")
-    with col2:
-        thickness = st.number_input(f"Thickness (m) - Layer {i+1}", min_value=0.1, value=5.0, step=0.5, key=f"thick_{i}")
-    cohesion = soil_types[soil]
-    layers.append({"type": soil, "cohesion": cohesion, "thickness": thickness})
+with tab1:
+    # --- User Inputs ---
+    st.subheader("📌 Input Parameters")
+    diameter = st.number_input("Pile Diameter (m)", value=0.6, step=0.05)
+    safety_factor = st.number_input("Safety Factor", value=2.5)
+    total_load = st.number_input("Total Building Load (kN)", value=1000)
+    
+    st.subheader("🧱 Soil Layers")
+    layer_count = st.number_input("Number of Layers", min_value=1, max_value=5, value=2)
+    layers = []
+    for i in range(int(layer_count)):
+        col1, col2 = st.columns(2)
+        with col1:
+            soil = st.selectbox(f"Soil Type - Layer {i+1}", list(soil_types.keys()), key=f"type_{i}")
+        with col2:
+            thickness = st.number_input(f"Thickness (m) - Layer {i+1}", min_value=0.1, value=5.0, step=0.5, key=f"thick_{i}")
+        cohesion = soil_types[soil]
+        layers.append({"type": soil, "cohesion": cohesion, "thickness": thickness})
+    
+    # --- Cost Input ---
+    st.subheader("💰 Concrete Cost")
+    cost_rate = st.number_input("Cost per m³ of Concrete (USD)", value=120.0)
+    
+    # --- Buttons ---
+    if st.button("Calculate Pile Capacity"):
+        capacity, total_depth = calculate_capacity(diameter, safety_factor, layers)
+        piles_needed = int((total_load / capacity) + 1)
+        volume_per_pile = calculate_concrete_volume(diameter, total_depth)
+        total_volume = volume_per_pile * piles_needed
+        total_cost = estimate_pile_cost(total_volume, cost_rate)
+    
+        st.success(f"✅ Allowable Load per Pile: {capacity} kN")
+        st.info(f"📏 Total Pile Length: {total_depth} m")
+        st.warning(f"🔢 Required Number of Piles: {piles_needed}")
+        st.info(f"🧱 Concrete per Pile: {volume_per_pile} m³")
+        st.info(f"🧱 Total Concrete Volume: {total_volume} m³")
+        st.success(f"💵 Estimated Total Cost: ${total_cost}")
+    
+        df = generate_excel_data(piles_needed, capacity, total_depth, diameter, volume_per_pile, total_volume, total_cost)
+        excel_buffer = BytesIO()
+        with pd.ExcelWriter(excel_buffer, engine="openpyxl") as writer:
+            df.to_excel(writer, index=False, sheet_name="Pile Summary")
+        st.download_button("📥 Download Excel Report", data=excel_buffer.getvalue(), file_name="pile_summary.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    
+        project_data = {"project_name": "My Project", "soil_layers": layers}
+        result_text = f"""Allowable Load per Pile: {capacity} kN\nTotal Pile Length: {total_depth} m\nRequired Number of Piles: {piles_needed}"""
+        pdf_file = generate_pdf(project_data, result_text)
+        st.download_button("📄 Download PDF Report", data=pdf_file, file_name="foundation_report.pdf", mime="application/pdf")
 
-# --- Cost Input ---
-st.subheader("💰 Concrete Cost")
-cost_rate = st.number_input("Cost per m³ of Concrete (USD)", value=120.0)
-
-# --- Buttons ---
-if st.button("Calculate Pile Capacity"):
-    capacity, total_depth = calculate_capacity(diameter, safety_factor, layers)
-    piles_needed = int((total_load / capacity) + 1)
-    volume_per_pile = calculate_concrete_volume(diameter, total_depth)
-    total_volume = volume_per_pile * piles_needed
-    total_cost = estimate_pile_cost(total_volume, cost_rate)
-
-    st.success(f"✅ Allowable Load per Pile: {capacity} kN")
-    st.info(f"📏 Total Pile Length: {total_depth} m")
-    st.warning(f"🔢 Required Number of Piles: {piles_needed}")
-    st.info(f"🧱 Concrete per Pile: {volume_per_pile} m³")
-    st.info(f"🧱 Total Concrete Volume: {total_volume} m³")
-    st.success(f"💵 Estimated Total Cost: ${total_cost}")
-
-    df = generate_excel_data(piles_needed, capacity, total_depth, diameter, volume_per_pile, total_volume, total_cost)
-    excel_buffer = BytesIO()
-    with pd.ExcelWriter(excel_buffer, engine="openpyxl") as writer:
-        df.to_excel(writer, index=False, sheet_name="Pile Summary")
-    st.download_button("📥 Download Excel Report", data=excel_buffer.getvalue(), file_name="pile_summary.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-
-    project_data = {"project_name": "My Project", "soil_layers": layers}
-    result_text = f"""Allowable Load per Pile: {capacity} kN\nTotal Pile Length: {total_depth} m\nRequired Number of Piles: {piles_needed}"""
-    pdf_file = generate_pdf(project_data, result_text)
-    st.download_button("📄 Download PDF Report", data=pdf_file, file_name="foundation_report.pdf", mime="application/pdf")
 
 if st.button("Show Pile Layout + Group Efficiency"):
     capacity, total_depth = calculate_capacity(diameter, safety_factor, layers)
