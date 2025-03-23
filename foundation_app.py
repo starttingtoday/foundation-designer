@@ -1,9 +1,9 @@
-import streamlit as st
-import json
-import datetime
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from io import BytesIO
+import streamlit as st
+import json
+import datetime
 
 st.set_page_config(page_title="Pile Foundation Designer", layout="centered")
 
@@ -90,7 +90,6 @@ st.download_button(
     file_name="foundation_report.pdf",
     mime="application/pdf"
 )
-
 
 if st.button("Calculate Pile Capacity"):
     capacity, total_depth = calculate_capacity(diameter, safety_factor, layers)
