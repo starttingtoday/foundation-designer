@@ -424,7 +424,7 @@ with tab8:
         fig, ax = plt.subplots()
         ax.bar(df_projects.index, df_projects["total_cost"], color="skyblue")
         ax.set_ylabel("USD")
-        ax.set_title("💰 Total Cost per Saved Project")
+        ax.set_title("💡 Total Cost per Saved Project")
         ax.tick_params(axis='x', rotation=30)
         st.pyplot(fig)
     else:
