@@ -156,6 +156,7 @@ with tab1:
 
     st.markdown("---")
     st.subheader("🧱 Soil Layers")
+    st.caption("📘 Cohesion values auto-fill based on soil type.")
     layer_count = st.number_input("Number of Layers", min_value=1, max_value=5, value=2)
     layers = []
     for i in range(int(layer_count)):
