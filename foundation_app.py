@@ -410,7 +410,7 @@ with tab8:
         st.metric("Total Concrete Volume (m³)", calc["total_volume"])
         st.metric("Estimated Cost (USD)", f"${calc['total_cost']}")
     else:
-        st.info("💡 Calculate a pile design in the Design tab to see dashboard results.")
+        st.info("💡💰 Calculate a pile design in the Design tab to see dashboard results.")
 
     st.markdown("---")
 
