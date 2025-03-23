@@ -67,6 +67,16 @@ def calculate_capacity(d, sf, layers):
     base_area = 3.14 * (d / 2) ** 2
     end = layers[-1]["cohesion"] * 9 * base_area
     ultimate = skin + end
+
+    # Inside calculation block
+    volume_per_pile = calculate_concrete_volume(diameter, total_depth)
+    total_volume = volume_per_pile * piles_needed
+    total_cost = estimate_pile_cost(total_volume, cost_rate)
+
+    st.info(f"🧱 Concrete per Pile: {volume_per_pile} m³")
+    st.info(f"🧱 Total Concrete Volume: {total_volume} m³")
+    st.success(f"💵 Estimated Total Cost: ${total_cost}")
+    
     return round(ultimate / sf, 2), round(length, 2)
 
 def calculate_group_efficiency(rows, cols, spacing, diameter):
@@ -78,6 +88,18 @@ def estimate_settlement(Q, L, diameter, Es):
     A = 3.14 * (diameter / 2) ** 2
     S = (Q * L) / (A * Es * 1000)  # Convert kPa to kN/m²
     return round(S * 1000, 2)  # return in mm
+
+def calculate_concrete_volume(diameter, length):
+    radius = diameter / 2
+    volume = 3.14 * radius ** 2 * length
+    return round(volume, 2)
+
+def estimate_pile_cost(volume, cost_per_m3):
+    return round(volume * cost_per_m3, 2)
+
+st.subheader("💰 Cost & Material Estimation")
+
+cost_rate = st.number_input("Cost per m³ of Concrete (USD)", value=120.0)
 
 def generate_pdf(project_data, result_text):
     from reportlab.pdfgen import canvas
