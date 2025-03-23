@@ -64,4 +64,15 @@ if st.button("📦 Download Project File"):
 
     st.download_button("⬇️ Download Project", data=json_string, file_name=filename, mime="application/json")
 
+st.subheader("📁 Load Saved Project")
+uploaded_file = st.file_uploader("Upload your `.json` project file")
 
+if uploaded_file is not None:
+    loaded_data = json.load(uploaded_file)
+
+    diameter = loaded_data["diameter"]
+    safety_factor = loaded_data["safety_factor"]
+    total_load = loaded_data["total_load"]
+    layers = loaded_data["soil_layers"]
+
+    st.success("✅ Project loaded successfully!")
