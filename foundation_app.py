@@ -178,119 +178,125 @@ with tab1:
         pdf_file = generate_pdf(project_data, result_text)
         st.download_button("📄 Download PDF Report", data=pdf_file, file_name="foundation_report.pdf", mime="application/pdf")
 
-
-if st.button("Show Pile Layout + Group Efficiency"):
-    capacity, total_depth = calculate_capacity(diameter, safety_factor, layers)
-    piles_needed = int((total_load / capacity) + 1)
-    rows, cols = suggest_layout(piles_needed)
-
-    spacing = st.number_input("Pile Spacing (m)", value=2.5, step=0.1)
-    st.write(f"🔢 Suggested Layout: {rows} rows × {cols} columns")
-
-    fig = draw_pile_layout(rows, cols, spacing)
-    st.pyplot(fig)
-
-    efficiency = calculate_group_efficiency(rows, cols, spacing, diameter)
-    group_capacity = round(capacity * efficiency, 2)
-
-    st.info(f"📉 Group Efficiency Factor: {efficiency}/{rows * cols}")
-    st.success(f"🧱 Total Group Capacity: {group_capacity} kN")
-
-st.subheader("📉 Settlement Estimation")
-
-Es = st.number_input("Soil Modulus Es (kPa)", value=15000)
-
-if st.button("Estimate Settlement"):
-    Q = total_load
-    L = sum(layer["thickness"] for layer in layers)
-
-    st.session_state["Q"] = Q
-    st.session_state["L"] = L
-    st.session_state["Es"] = Es
-    st.session_state["diameter"] = diameter
-
-    settlement = estimate_settlement(Q, L, diameter, Es)
-    st.success(f"📏 Estimated Settlement: {settlement} mm")
-
-if st.checkbox("📈 Show Load vs. Settlement Curve"):
-    if "Q" in st.session_state and "L" in st.session_state:
-        Q = st.session_state["Q"]
-        L = st.session_state["L"]
-        Es = st.session_state["Es"]
-        diameter = st.session_state["diameter"]
-
-        loads = [Q * x for x in [0.2, 0.4, 0.6, 0.8, 1.0]]
-        settlements = [estimate_settlement(q, L, diameter, Es) for q in loads]
-
-        import matplotlib.pyplot as plt
-        fig, ax = plt.subplots()
-        ax.plot(settlements, loads, marker='o')
-        ax.set_xlabel("Settlement (mm)")
-        ax.set_ylabel("Load (kN)")
-        ax.set_title("Load vs. Settlement")
-        ax.grid(True)
+with tab2:
+    
+    if st.button("Show Pile Layout + Group Efficiency"):
+        capacity, total_depth = calculate_capacity(diameter, safety_factor, layers)
+        piles_needed = int((total_load / capacity) + 1)
+        rows, cols = suggest_layout(piles_needed)
+    
+        spacing = st.number_input("Pile Spacing (m)", value=2.5, step=0.1)
+        st.write(f"🔢 Suggested Layout: {rows} rows × {cols} columns")
+    
+        fig = draw_pile_layout(rows, cols, spacing)
         st.pyplot(fig)
-    else:
-        st.warning("⚠️ Please click 'Estimate Settlement' first.")
+    
+        efficiency = calculate_group_efficiency(rows, cols, spacing, diameter)
+        group_capacity = round(capacity * efficiency, 2)
+    
+        st.info(f"📉 Group Efficiency Factor: {efficiency}/{rows * cols}")
+        st.success(f"🧱 Total Group Capacity: {group_capacity} kN")
 
-st.subheader("🆚 Design Comparison")
+with tab3:
+    
+    st.subheader("📉 Settlement Estimation")
+    
+    Es = st.number_input("Soil Modulus Es (kPa)", value=15000)
+    
+    if st.button("Estimate Settlement"):
+        Q = total_load
+        L = sum(layer["thickness"] for layer in layers)
+    
+        st.session_state["Q"] = Q
+        st.session_state["L"] = L
+        st.session_state["Es"] = Es
+        st.session_state["diameter"] = diameter
+    
+        settlement = estimate_settlement(Q, L, diameter, Es)
+        st.success(f"📏 Estimated Settlement: {settlement} mm")
+    
+    if st.checkbox("📈 Show Load vs. Settlement Curve"):
+        if "Q" in st.session_state and "L" in st.session_state:
+            Q = st.session_state["Q"]
+            L = st.session_state["L"]
+            Es = st.session_state["Es"]
+            diameter = st.session_state["diameter"]
+    
+            loads = [Q * x for x in [0.2, 0.4, 0.6, 0.8, 1.0]]
+            settlements = [estimate_settlement(q, L, diameter, Es) for q in loads]
+    
+            import matplotlib.pyplot as plt
+            fig, ax = plt.subplots()
+            ax.plot(settlements, loads, marker='o')
+            ax.set_xlabel("Settlement (mm)")
+            ax.set_ylabel("Load (kN)")
+            ax.set_title("Load vs. Settlement")
+            ax.grid(True)
+            st.pyplot(fig)
+        else:
+            st.warning("⚠️ Please click 'Estimate Settlement' first.")
 
-col1, col2 = st.columns(2)
+with tab4:
+    
+    st.subheader("🆚 Design Comparison")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("### Design A")
+        d1 = st.number_input("Diameter A (m)", value=0.6, key="d1")
+        l1 = st.number_input("Length A (m)", value=20.0, key="l1")
+        sf1 = st.number_input("Safety Factor A", value=2.5, key="sf1")
+    
+    with col2:
+        st.markdown("### Design B")
+        d2 = st.number_input("Diameter B (m)", value=0.45, key="d2")
+        l2 = st.number_input("Length B (m)", value=25.0, key="l2")
+        sf2 = st.number_input("Safety Factor B", value=2.5, key="sf2")
+    
+    if st.button("Compare Designs"):
+        load = total_load
+        cohesion = 50  # For simplicity
+    
+        cost_rate = 120.0  # USD/m³
+        a = pile_design_summary(d1, l1, sf1, cohesion, load, cost_rate)
+        b = pile_design_summary(d2, l2, sf2, cohesion, load, cost_rate)
+    
+        st.write("### 📊 Comparison Table")
+        comp_df = pd.DataFrame({
+            "Metric": ["Allowable Capacity (kN)", "Pile Count", "Concrete per Pile (m³)", "Total Cost (USD)"],
+            "Design A": a,
+            "Design B": b
+        })
+    
+        st.dataframe(comp_df)
+    
+        st.success("✅ Design comparison complete. Choose wisely!")
 
-with col1:
-    st.markdown("### Design A")
-    d1 = st.number_input("Diameter A (m)", value=0.6, key="d1")
-    l1 = st.number_input("Length A (m)", value=20.0, key="l1")
-    sf1 = st.number_input("Safety Factor A", value=2.5, key="sf1")
-
-with col2:
-    st.markdown("### Design B")
-    d2 = st.number_input("Diameter B (m)", value=0.45, key="d2")
-    l2 = st.number_input("Length B (m)", value=25.0, key="l2")
-    sf2 = st.number_input("Safety Factor B", value=2.5, key="sf2")
-
-if st.button("Compare Designs"):
-    load = total_load
-    cohesion = 50  # For simplicity
-
-    cost_rate = 120.0  # USD/m³
-    a = pile_design_summary(d1, l1, sf1, cohesion, load, cost_rate)
-    b = pile_design_summary(d2, l2, sf2, cohesion, load, cost_rate)
-
-    st.write("### 📊 Comparison Table")
-    comp_df = pd.DataFrame({
-        "Metric": ["Allowable Capacity (kN)", "Pile Count", "Concrete per Pile (m³)", "Total Cost (USD)"],
-        "Design A": a,
-        "Design B": b
-    })
-
-    st.dataframe(comp_df)
-
-    st.success("✅ Design comparison complete. Choose wisely!")
-
-
-if st.button("📦 Download Project File"):
-    project_data = {
-        "diameter": diameter,
-        "safety_factor": safety_factor,
-        "total_load": total_load,
-        "soil_layers": layers
-    }
-    json_string = json.dumps(project_data, indent=2)
-
-    filename = f"foundation_project_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-
-    st.download_button("⬇️ Download Project", data=json_string, file_name=filename, mime="application/json")
-
-st.subheader("📁 Load Saved Project")
-uploaded_file = st.file_uploader("Upload your `.json` project file")
-
-if uploaded_file is not None:
-    loaded_data = json.load(uploaded_file)
-
-    diameter = loaded_data["diameter"]
-    safety_factor = loaded_data["safety_factor"]
-    total_load = loaded_data["total_load"]
-    layers = loaded_data["soil_layers"]
-
-    st.success("✅ Project loaded successfully!")
+with tab5:
+    
+    if st.button("📦 Download Project File"):
+        project_data = {
+            "diameter": diameter,
+            "safety_factor": safety_factor,
+            "total_load": total_load,
+            "soil_layers": layers
+        }
+        json_string = json.dumps(project_data, indent=2)
+    
+        filename = f"foundation_project_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+    
+        st.download_button("⬇️ Download Project", data=json_string, file_name=filename, mime="application/json")
+    
+    st.subheader("📁 Load Saved Project")
+    uploaded_file = st.file_uploader("Upload your `.json` project file")
+    
+    if uploaded_file is not None:
+        loaded_data = json.load(uploaded_file)
+    
+        diameter = loaded_data["diameter"]
+        safety_factor = loaded_data["safety_factor"]
+        total_load = loaded_data["total_load"]
+        layers = loaded_data["soil_layers"]
+    
+        st.success("✅ Project loaded successfully!")
