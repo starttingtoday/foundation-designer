@@ -157,6 +157,16 @@ if st.button("Show Pile Layout + Group Efficiency"):
     st.info(f"📉 Group Efficiency Factor: {efficiency}/{rows * cols}")
     st.success(f"🧱 Total Group Capacity: {group_capacity} kN")
 
+st.subheader("📉 Settlement Estimation")
+
+Es = st.number_input("Soil Modulus Es (kPa)", value=15000)
+if st.button("Estimate Settlement"):
+    Q = total_load  # total applied load from the building
+    L = sum(layer["thickness"] for layer in layers)
+    settlement = estimate_settlement(Q, L, diameter, Es)
+
+    st.success(f"📏 Estimated Settlement: {settlement} mm")
+
 if st.checkbox("📈 Show Load vs. Settlement Curve"):
     loads = [Q * x for x in [0.2, 0.4, 0.6, 0.8, 1.0]]
     settlements = [estimate_settlement(q, L, diameter, Es) for q in loads]
@@ -168,16 +178,6 @@ if st.checkbox("📈 Show Load vs. Settlement Curve"):
     ax.set_title("Load vs. Settlement")
     ax.grid(True)
     st.pyplot(fig)
-
-st.subheader("📉 Settlement Estimation")
-
-Es = st.number_input("Soil Modulus Es (kPa)", value=15000)
-if st.button("Estimate Settlement"):
-    Q = total_load  # total applied load from the building
-    L = sum(layer["thickness"] for layer in layers)
-    settlement = estimate_settlement(Q, L, diameter, Es)
-
-    st.success(f"📏 Estimated Settlement: {settlement} mm")
 
 if st.button("📦 Download Project File"):
     project_data = {
