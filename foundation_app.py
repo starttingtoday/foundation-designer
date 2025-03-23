@@ -14,7 +14,7 @@ st.title("🌍 Pile Foundation Designer")
 # Basic inputs
 diameter = st.number_input("Pile Diameter (m)", value=0.6, step=0.05)
 safety_factor = st.number_input("Safety Factor", value=2.5)
-total_load = st.number_input("Total Building Load (kN)", value=10000)
+total_load = st.number_input("Total Building Load (kN)", value=1000)
 
 # Soil layers input
 st.subheader("Soil Layers")
