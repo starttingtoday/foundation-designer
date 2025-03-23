@@ -150,6 +150,8 @@ st.markdown(
     """
 )
 
+language = st.sidebar.selectbox("🌐 Language", ["English", "မြန်မာ", "ភាសាខ្មែរ"])
+
 tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs([
     "Design Calculator",
     "Layout & Efficiency",
