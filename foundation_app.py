@@ -152,6 +152,46 @@ st.markdown(
 
 language = st.sidebar.selectbox("🌐 Language", ["English", "မြန်မာ", "ភាសាខ្មែរ"])
 
+translations = {
+    "English": {
+        "title": "Pile Foundation Designer",
+        "calculate": "Calculate Pile Capacity",
+        "load": "Total Building Load (kN)",
+        "diameter": "Pile Diameter (m)",
+        "safety_factor": "Safety Factor",
+        "layers": "Soil Layers",
+        "cost": "Concrete Cost (USD/m³)",
+        "save": "Save This Design",
+    },
+    "မြန်မာ": {
+        "title": "အုတ်ထောင်ခြင်း ဒီဇိုင်းကိရိယာ",
+        "calculate": "အုတ်စွမ်းရည်တွက်ချက်ပါ",
+        "load": "အဆောက်အဦး တင်မြှောက်မှု (kN)",
+        "diameter": "အုတ်အချင်း (မီတာ)",
+        "safety_factor": "လုံခြုံမှုအချက်",
+        "layers": "မြေဆီလွှာများ",
+        "cost": "ကွန်ကရစ်ဈေးနှုန်း (USD/m³)",
+        "save": "ဒီဇိုင်း သိမ်းဆည်းပါ",
+    },
+    "ភាសាខ្មែរ": {
+        "title": "កម្មវិធីរចនាគោលស្ថាបនា",
+        "calculate": "គណនសមត្ថភាពគោលស្ថាបនា",
+        "load": "បន្ទុកសំណង់សរុប (kN)",
+        "diameter": "អង្កត់ផ្ចិតគោល (m)",
+        "safety_factor": "កត្តាសុវត្ថិភាព",
+        "layers": "ស្រទាប់ដី",
+        "cost": "តម្លៃកុងគ្រីត (USD/m³)",
+        "save": "រក្សាទុកការរចនានេះ",
+    }
+}
+
+_ = translations[language]
+
+st.title(_["title"])
+st.number_input(_["diameter"], value=0.6)
+st.button(_["calculate"])
+
+
 tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs([
     "Design Calculator",
     "Layout & Efficiency",
