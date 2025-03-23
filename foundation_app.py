@@ -1,6 +1,4 @@
-from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import A4
-from io i# --- Imports ---
+# --- Imports ---
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from io import BytesIO
