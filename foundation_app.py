@@ -69,6 +69,11 @@ def calculate_capacity(d, sf, layers):
     ultimate = skin + end
     return round(ultimate / sf, 2), round(length, 2)
 
+def calculate_group_efficiency(rows, cols, spacing, diameter):
+    spacing_ratio = spacing / diameter
+    efficiency = (rows * cols) / (1 + 0.1 * spacing_ratio)
+    return round(min(efficiency, rows * cols), 2)
+
 def generate_pdf(project_data, result_text):
     from reportlab.pdfgen import canvas
     from reportlab.lib.pagesizes import A4
@@ -130,16 +135,23 @@ if st.button("Calculate Pile Capacity"):
         mime="application/pdf"
     )
 
-if st.button("Show Pile Layout"):
+if st.button("Show Pile Layout + Group Efficiency"):
     capacity, total_depth = calculate_capacity(diameter, safety_factor, layers)
     piles_needed = int((total_load / capacity) + 1)
     rows, cols = suggest_layout(piles_needed)
 
     spacing = st.number_input("Pile Spacing (m)", value=2.5, step=0.1)
-    st.write(f"🔢 Layout: {rows} rows × {cols} columns")
+    st.write(f"🔢 Suggested Layout: {rows} rows × {cols} columns")
 
     fig = draw_pile_layout(rows, cols, spacing)
     st.pyplot(fig)
+
+    efficiency = calculate_group_efficiency(rows, cols, spacing, diameter)
+    group_capacity = round(capacity * efficiency, 2)
+
+    st.info(f"📉 Group Efficiency Factor: {efficiency}/{rows * cols}")
+    st.success(f"🧱 Total Group Capacity: {group_capacity} kN")
+
 
 if st.button("📦 Download Project File"):
     project_data = {
