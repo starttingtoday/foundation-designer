@@ -45,6 +45,41 @@ def calculate_capacity(d, sf, layers):
     ultimate = skin + end
     return round(ultimate / sf, 2), round(length, 2)
 
+if st.button("Calculate Pile Capacity"):
+    capacity, total_depth = calculate_capacity(diameter, safety_factor, layers)
+    piles_needed = int((total_load / capacity) + 1)
+
+    st.success(f"✅ Allowable Load per Pile: {capacity} kN")
+    st.info(f"📏 Total Pile Length: {total_depth} m")
+    st.warning(f"🔢 Required Number of Piles: {piles_needed}")
+
+
+if st.button("📦 Download Project File"):
+    project_data = {
+        "diameter": diameter,
+        "safety_factor": safety_factor,
+        "total_load": total_load,
+        "soil_layers": layers
+    }
+    json_string = json.dumps(project_data, indent=2)
+
+    filename = f"foundation_project_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+
+    st.download_button("⬇️ Download Project", data=json_string, file_name=filename, mime="application/json")
+
+st.subheader("📁 Load Saved Project")
+uploaded_file = st.file_uploader("Upload your `.json` project file")
+
+if uploaded_file is not None:
+    loaded_data = json.load(uploaded_file)
+
+    diameter = loaded_data["diameter"]
+    safety_factor = loaded_data["safety_factor"]
+    total_load = loaded_data["total_load"]
+    layers = loaded_data["soil_layers"]
+
+    st.success("✅ Project loaded successfully!")
+
 def generate_pdf(project_data, result_text):
     buffer = BytesIO()
     c = canvas.Canvas(buffer, pagesize=A4)
@@ -90,38 +125,3 @@ st.download_button(
     file_name="foundation_report.pdf",
     mime="application/pdf"
 )
-
-if st.button("Calculate Pile Capacity"):
-    capacity, total_depth = calculate_capacity(diameter, safety_factor, layers)
-    piles_needed = int((total_load / capacity) + 1)
-
-    st.success(f"✅ Allowable Load per Pile: {capacity} kN")
-    st.info(f"📏 Total Pile Length: {total_depth} m")
-    st.warning(f"🔢 Required Number of Piles: {piles_needed}")
-
-
-if st.button("📦 Download Project File"):
-    project_data = {
-        "diameter": diameter,
-        "safety_factor": safety_factor,
-        "total_load": total_load,
-        "soil_layers": layers
-    }
-    json_string = json.dumps(project_data, indent=2)
-
-    filename = f"foundation_project_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-
-    st.download_button("⬇️ Download Project", data=json_string, file_name=filename, mime="application/json")
-
-st.subheader("📁 Load Saved Project")
-uploaded_file = st.file_uploader("Upload your `.json` project file")
-
-if uploaded_file is not None:
-    loaded_data = json.load(uploaded_file)
-
-    diameter = loaded_data["diameter"]
-    safety_factor = loaded_data["safety_factor"]
-    total_load = loaded_data["total_load"]
-    layers = loaded_data["soil_layers"]
-
-    st.success("✅ Project loaded successfully!")
