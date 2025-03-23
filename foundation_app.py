@@ -49,17 +49,10 @@ def calculate_concrete_volume(diameter, length):
 def calculate_capacity(diameter, safety_factor, layers):
     perimeter = 3.14 * diameter
     length = sum(layer["thickness"] for layer in layers)
-
     skin = sum(layer["cohesion"] * perimeter * layer["thickness"] for layer in layers)
-    base_area = 3.14 * (diameter / 2) ** 2
-    end = layers[-1]["cohesion"] * 9 * base_area
-    ultimate = skin + end
-
-    allowable = round(ultimate / safety_factor, 2)
-
-    # 🔁 Return extra details for learning mode
-    return allowable, round(length, 2), perimeter, base_area, skin, end, ultimate
-
+    base = layers[-1]["cohesion"] * 9 * (3.14 * (diameter / 2) ** 2)
+    ultimate = skin + base
+    return round(ultimate / safety_factor, 2), round(length, 2)
 
 def calculate_group_efficiency(rows, cols, spacing, diameter):
     spacing_ratio = spacing / diameter
