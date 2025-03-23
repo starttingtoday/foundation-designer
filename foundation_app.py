@@ -277,6 +277,18 @@ with tab1:
             "total_load": total_load,
         }
 
+        if learning_mode:
+            st.caption("🧠 Formula: Allowable = (Skin Friction + End Bearing) / Safety Factor")
+            st.caption("📘 Skin Friction = Σ (cohesion × perimeter × thickness)")
+            st.caption("📘 End Bearing = cohesion × 9 × base area")
+
+        if learning_mode:
+            st.markdown("### 🧾 Calculation Breakdown")
+            st.write(f"Perimeter = 3.14 × {diameter} = {3.14 * diameter:.2f} m")
+            st.write(f"Base Area = π × (d/2)² = {3.14 * (diameter / 2) ** 2:.2f} m²")
+            st.write(f"Ultimate Load = Skin Friction + End Bearing = {ultimate:.2f} kN")
+            st.write(f"Allowable Load = Ultimate / SF = {ultimate:.2f} / {safety_factor} = {capacity:.2f} kN")
+
 
     if "calculated" in st.session_state:
         st.markdown("---")
@@ -287,19 +299,6 @@ with tab1:
             st.session_state.setdefault("saved_projects", {})
             st.session_state["saved_projects"][project_name] = st.session_state["calculated"]
             st.success(f"✅ '{project_name}' saved!")
-
-    if learning_mode:
-        st.caption("🧠 Formula: Allowable = (Skin Friction + End Bearing) / Safety Factor")
-        st.caption("📘 Skin Friction = Σ (cohesion × perimeter × thickness)")
-        st.caption("📘 End Bearing = cohesion × 9 × base area")
-
-    if learning_mode:
-        st.markdown("### 🧾 Calculation Breakdown")
-        st.write(f"Perimeter = 3.14 × {diameter} = {3.14 * diameter:.2f} m")
-        st.write(f"Base Area = π × (d/2)² = {3.14 * (diameter / 2) ** 2:.2f} m²")
-        st.write(f"Ultimate Load = Skin Friction + End Bearing = {ultimate:.2f} kN")
-        st.write(f"Allowable Load = Ultimate / SF = {ultimate:.2f} / {safety_factor} = {capacity:.2f} kN")
-
 
 with tab2:
 
