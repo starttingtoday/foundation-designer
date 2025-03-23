@@ -6,6 +6,7 @@ import json
 import datetime
 import math
 import matplotlib.pyplot as plt
+import pandas as pd
 
 st.set_page_config(page_title="Pile Foundation Designer", layout="centered")
 
@@ -94,6 +95,31 @@ def estimate_pile_cost(volume, cost_per_m3):
 st.subheader("💰 Cost & Material Estimation")
 
 cost_rate = st.number_input("Cost per m³ of Concrete (USD)", value=120.0)
+
+def generate_excel_data(piles_needed, capacity, pile_length, diameter, volume_per_pile, total_volume, total_cost):
+    data = {
+        "Item": [
+            "Pile Diameter (m)",
+            "Pile Length (m)",
+            "Allowable Load per Pile (kN)",
+            "Required Number of Piles",
+            "Concrete Volume per Pile (m³)",
+            "Total Concrete Volume (m³)",
+            "Estimated Total Cost (USD)"
+        ],
+        "Value": [
+            diameter,
+            pile_length,
+            capacity,
+            piles_needed,
+            volume_per_pile,
+            total_volume,
+            total_cost
+        ]
+    }
+    df = pd.DataFrame(data)
+    return df
+
 
 def generate_pdf(project_data, result_text):
     from reportlab.pdfgen import canvas
@@ -233,6 +259,19 @@ if st.button("📦 Download Project File"):
     filename = f"foundation_project_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
 
     st.download_button("⬇️ Download Project", data=json_string, file_name=filename, mime="application/json")
+
+df = generate_excel_data(piles_needed, capacity, total_depth, diameter, volume_per_pile, total_volume, total_cost)
+
+excel_buffer = BytesIO()
+with pd.ExcelWriter(excel_buffer, engine="openpyxl") as writer:
+    df.to_excel(writer, index=False, sheet_name="Pile Summary")
+
+st.download_button(
+    label="📥 Download Excel Report",
+    data=excel_buffer.getvalue(),
+    file_name="pile_design_summary.xlsx",
+    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+)
 
 st.subheader("📁 Load Saved Project")
 uploaded_file = st.file_uploader("Upload your `.json` project file")
