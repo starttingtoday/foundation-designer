@@ -1,4 +1,5 @@
 streamlit
-reportlab
 matplotlib
+reportlab
+pandas
 openpyxl
