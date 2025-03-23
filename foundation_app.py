@@ -218,7 +218,6 @@ with tab1:
         st.session_state["total_vol"] = total_volume
         st.session_state["boq_ready"] = True
 
-        # After Calculate Pile Capacity
         st.session_state["calculated"] = {
             "capacity": capacity,
             "pile_length": total_depth,
@@ -228,6 +227,7 @@ with tab1:
             "total_cost": total_cost
         }
 
+        project_name = st.text_input("Project Name", value="Unnamed Design")
         if st.button("💾 Save This Design"):
             if "calculated" in st.session_state:
                 st.session_state.setdefault("saved_projects", {})
@@ -241,7 +241,6 @@ with tab1:
                 st.success(f"✅ '{project_name}' saved!")
             else:
                 st.warning("⚠️ Please calculate the design before saving.")
-
 
 with tab2:
 
