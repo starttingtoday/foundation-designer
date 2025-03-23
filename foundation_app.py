@@ -121,6 +121,18 @@ def generate_pdf(project_data, result_text):
     buffer.seek(0)
     return buffer
 
+def generate_boq(piles, volume_per_pile, total_volume, concrete_rate, rebar_rate, labor_rate):
+    boq = [
+        {"Item": "Concrete", "Unit": "m³", "Qty": total_volume, "Unit Rate": concrete_rate},
+        {"Item": "Rebar (5%)", "Unit": "kg", "Qty": round(total_volume * 0.05 * 7850, 2), "Unit Rate": rebar_rate},
+        {"Item": "Pile Excavation", "Unit": "m³", "Qty": total_volume, "Unit Rate": 25.0},
+        {"Item": "Pile Installation", "Unit": "each", "Qty": piles, "Unit Rate": labor_rate},
+        {"Item": "Mobilization & Setup", "Unit": "lump sum", "Qty": 1, "Unit Rate": 1000.0},
+    ]
+    for row in boq:
+        row["Total"] = round(row["Qty"] * row["Unit Rate"], 2)
+    return pd.DataFrame(boq)
+
 st.markdown(
     """
     Welcome to the **🌍 Pile Foundation Designer**!
@@ -138,12 +150,13 @@ st.markdown(
     """
 )
 
-tab1, tab2, tab3, tab4, tab5 = st.tabs([
+tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
     "Design Calculator",
     "Layout & Efficiency",
     "Settlement",
     "Compare Designs",
-    "Save / Export"
+    "Save / Export",
+    "BOQ"
 ])
 
 with tab1:
@@ -199,6 +212,12 @@ with tab1:
         result_text = f"""Allowable Load per Pile: {capacity} kN\nTotal Pile Length: {total_depth} m\nRequired Number of Piles: {piles_needed}"""
         pdf_file = generate_pdf(project_data, result_text)
         st.download_button("📄 Download PDF Report", data=pdf_file, file_name="foundation_report.pdf", mime="application/pdf")
+
+        st.session_state["piles"] = piles_needed
+        st.session_state["vol_per_pile"] = volume_per_pile
+        st.session_state["total_vol"] = total_volume
+        st.session_state["boq_ready"] = True
+
 
 with tab2:
 
@@ -324,3 +343,21 @@ with tab5:
         layers = loaded_data["soil_layers"]
     
         st.success("✅ Project loaded successfully!")
+
+with tab6:
+    st.subheader("📋 Bill of Quantities")
+
+    if st.session_state.get("boq_ready"):
+        df_boq = generate_boq(
+            st.session_state["piles"],
+            st.session_state["vol_per_pile"],
+            st.session_state["total_vol"],
+            concrete_rate=120.0,
+            rebar_rate=1.5,
+            labor_rate=50.0
+        )
+        st.dataframe(df_boq)
+        st.success("✅ BOQ generated. Prices are editable in code.")
+    else:
+        st.info("💡 Calculate pile design first in the Design tab.")
+
