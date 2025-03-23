@@ -164,11 +164,22 @@ Es = st.number_input("Soil Modulus Es (kPa)", value=15000)
 if st.button("Estimate Settlement"):
     Q = total_load
     L = sum(layer["thickness"] for layer in layers)
-    settlement = estimate_settlement(Q, L, diameter, Es)
 
+    st.session_state["Q"] = Q
+    st.session_state["L"] = L
+    st.session_state["Es"] = Es
+    st.session_state["diameter"] = diameter
+
+    settlement = estimate_settlement(Q, L, diameter, Es)
     st.success(f"📏 Estimated Settlement: {settlement} mm")
 
-    if st.checkbox("📈 Show Load vs. Settlement Curve"):
+if st.checkbox("📈 Show Load vs. Settlement Curve"):
+    if "Q" in st.session_state and "L" in st.session_state:
+        Q = st.session_state["Q"]
+        L = st.session_state["L"]
+        Es = st.session_state["Es"]
+        diameter = st.session_state["diameter"]
+
         loads = [Q * x for x in [0.2, 0.4, 0.6, 0.8, 1.0]]
         settlements = [estimate_settlement(q, L, diameter, Es) for q in loads]
 
@@ -180,6 +191,8 @@ if st.button("Estimate Settlement"):
         ax.set_title("Load vs. Settlement")
         ax.grid(True)
         st.pyplot(fig)
+    else:
+        st.warning("⚠️ Please click 'Estimate Settlement' first.")
 
 if st.button("📦 Download Project File"):
     project_data = {
