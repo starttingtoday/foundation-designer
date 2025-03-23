@@ -172,6 +172,22 @@ if st.button("Calculate Pile Capacity"):
     st.info(f"🧱 Total Concrete Volume: {total_volume} m³")
     st.success(f"💵 Estimated Total Cost: ${total_cost}")
 
+    df = generate_excel_data(piles_needed, capacity, total_depth, diameter, volume_per_pile, total_volume, total_cost)
+
+    excel_buffer = BytesIO()
+    with pd.ExcelWriter(excel_buffer, engine="openpyxl") as writer:
+        df.to_excel(writer, index=False, sheet_name="Pile Summary")
+    
+    st.download_button(
+        label="📥 Download Excel Report",
+        data=excel_buffer.getvalue(),
+        file_name="pile_design_summary.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+    
+    st.subheader("📁 Load Saved Project")
+    uploaded_file = st.file_uploader("Upload your `.json` project file")
+
     # Prepare report content
     project_data = {
         "project_name": "My Project",
@@ -259,22 +275,6 @@ if st.button("📦 Download Project File"):
     filename = f"foundation_project_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
 
     st.download_button("⬇️ Download Project", data=json_string, file_name=filename, mime="application/json")
-
-df = generate_excel_data(piles_needed, capacity, total_depth, diameter, volume_per_pile, total_volume, total_cost)
-
-excel_buffer = BytesIO()
-with pd.ExcelWriter(excel_buffer, engine="openpyxl") as writer:
-    df.to_excel(writer, index=False, sheet_name="Pile Summary")
-
-st.download_button(
-    label="📥 Download Excel Report",
-    data=excel_buffer.getvalue(),
-    file_name="pile_design_summary.xlsx",
-    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-)
-
-st.subheader("📁 Load Saved Project")
-uploaded_file = st.file_uploader("Upload your `.json` project file")
 
 if uploaded_file is not None:
     loaded_data = json.load(uploaded_file)
