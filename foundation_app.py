@@ -76,8 +76,6 @@ def calculate_capacity(diameter, safety_factor, layers):
 
     allowable = round(ultimate / safety_factor, 2)
 
-    return allowable, round(length, 2)
-    
     # Inside calculation block
     volume_per_pile = calculate_concrete_volume(diameter, total_depth)
     total_volume = volume_per_pile * piles_needed
@@ -86,6 +84,8 @@ def calculate_capacity(diameter, safety_factor, layers):
     st.info(f"🧱 Concrete per Pile: {volume_per_pile} m³")
     st.info(f"🧱 Total Concrete Volume: {total_volume} m³")
     st.success(f"💵 Estimated Total Cost: ${total_cost}")
+    
+    return allowable, round(length, 2)
 
 def calculate_group_efficiency(rows, cols, spacing, diameter):
     spacing_ratio = spacing / diameter
