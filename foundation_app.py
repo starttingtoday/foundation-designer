@@ -171,7 +171,8 @@ if st.button("Estimate Settlement"):
     if st.checkbox("📈 Show Load vs. Settlement Curve"):
         loads = [Q * x for x in [0.2, 0.4, 0.6, 0.8, 1.0]]
         settlements = [estimate_settlement(q, L, diameter, Es) for q in loads]
-        
+
+        import matplotlib.pyplot as plt
         fig, ax = plt.subplots()
         ax.plot(settlements, loads, marker='o')
         ax.set_xlabel("Settlement (mm)")
@@ -179,7 +180,6 @@ if st.button("Estimate Settlement"):
         ax.set_title("Load vs. Settlement")
         ax.grid(True)
         st.pyplot(fig)
-
 
 if st.button("📦 Download Project File"):
     project_data = {
