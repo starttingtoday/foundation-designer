@@ -219,22 +219,22 @@ with tab1:
         st.session_state["total_vol"] = total_volume
         st.session_state["boq_ready"] = True
 
-    project_name = st.text_input("Project Name", value="Unnamed Design")
-    if st.button("💾 Save This Design"):
-        st.session_state.setdefault("saved_projects", {})
-        st.session_state["saved_projects"][project_name] = {
-            "diameter": diameter,
-            "safety_factor": safety_factor,
-            "total_load": total_load,
-            "layers": layers,
-            "capacity": capacity,
-            "pile_length": total_depth,
-            "piles_needed": piles_needed,
-            "volume_per_pile": volume_per_pile,
-            "total_volume": total_volume,
-            "total_cost": total_cost
-        }
-        st.success(f"✅ '{project_name}' saved!")
+        project_name = st.text_input("Project Name", value="Unnamed Design")
+        if st.button("💾 Save This Design"):
+            st.session_state.setdefault("saved_projects", {})
+            st.session_state["saved_projects"][project_name] = {
+                "diameter": diameter,
+                "safety_factor": safety_factor,
+                "total_load": total_load,
+                "layers": layers,
+                "capacity": capacity,
+                "pile_length": total_depth,
+                "piles_needed": piles_needed,
+                "volume_per_pile": volume_per_pile,
+                "total_volume": total_volume,
+                "total_cost": total_cost
+            }
+            st.success(f"✅ '{project_name}' saved!")
 
 with tab2:
 
