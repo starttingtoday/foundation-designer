@@ -333,6 +333,23 @@ with tab5:
         st.info("💡 Calculate pile design first in the Design tab.")
 
 with tab6:
+
+    project_name = st.text_input("Project Name", value="Unnamed Design")
+    if st.button("💾 Save This Design"):
+        st.session_state.setdefault("saved_projects", {})
+        st.session_state["saved_projects"][project_name] = {
+            "diameter": diameter,
+            "safety_factor": safety_factor,
+            "total_load": total_load,
+            "layers": layers,
+            "capacity": capacity,
+            "pile_length": total_depth,
+            "piles_needed": piles_needed,
+            "volume_per_pile": volume_per_pile,
+            "total_volume": total_volume,
+            "total_cost": total_cost
+        }
+        st.success(f"✅ '{project_name}' saved!")
     
     if st.button("📦 Download Project File"):
         project_data = {
@@ -346,23 +363,6 @@ with tab6:
         filename = f"foundation_project_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
     
         st.download_button("⬇️ Download Project", data=json_string, file_name=filename, mime="application/json")
-
-        project_name = st.text_input("Project Name", value="Unnamed Design")
-        if st.button("💾 Save This Design"):
-            st.session_state.setdefault("saved_projects", {})
-            st.session_state["saved_projects"][project_name] = {
-                "diameter": diameter,
-                "safety_factor": safety_factor,
-                "total_load": total_load,
-                "layers": layers,
-                "capacity": capacity,
-                "pile_length": total_depth,
-                "piles_needed": piles_needed,
-                "volume_per_pile": volume_per_pile,
-                "total_volume": total_volume,
-                "total_cost": total_cost
-            }
-            st.success(f"✅ '{project_name}' saved!")
 
     st.markdown("---")
     st.subheader("📁 Load Saved Project")
