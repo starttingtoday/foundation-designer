@@ -151,6 +151,7 @@ st.markdown(
 )
 
 language = st.sidebar.selectbox("🌐 Language", ["English", "မြန်မာ", "ភាសាខ្មែរ"])
+learning_mode = st.sidebar.checkbox("🎓 Enable Learning Mode")
 
 translations = {
     "English": {
@@ -211,6 +212,11 @@ with tab1:
     st.markdown("---")
     st.subheader("🧱 Soil Layers")
     st.caption("📘 Cohesion values auto-fill based on soil type.")
+
+    if learning_mode:
+        st.markdown("📚 **Soil Cohesion** is the soil’s natural resistance to shear — typically in kPa.")
+
+    
     layer_count = st.number_input("Number of Layers", min_value=1, max_value=5, value=2)
     layers = []
     for i in range(int(layer_count)):
@@ -281,6 +287,19 @@ with tab1:
             st.session_state.setdefault("saved_projects", {})
             st.session_state["saved_projects"][project_name] = st.session_state["calculated"]
             st.success(f"✅ '{project_name}' saved!")
+
+    if learning_mode:
+        st.caption("🧠 Formula: Allowable = (Skin Friction + End Bearing) / Safety Factor")
+        st.caption("📘 Skin Friction = Σ (cohesion × perimeter × thickness)")
+        st.caption("📘 End Bearing = cohesion × 9 × base area")
+
+    if learning_mode:
+        st.markdown("### 🧾 Calculation Breakdown")
+        st.write(f"Perimeter = 3.14 × {diameter} = {3.14 * diameter:.2f} m")
+        st.write(f"Base Area = π × (d/2)² = {3.14 * (diameter / 2) ** 2:.2f} m²")
+        st.write(f"Ultimate Load = Skin Friction + End Bearing = {ultimate:.2f} kN")
+        st.write(f"Allowable Load = Ultimate / SF = {ultimate:.2f} / {safety_factor} = {capacity:.2f} kN")
+
 
 with tab2:
 
