@@ -60,17 +60,20 @@ def draw_pile_layout(rows, cols, spacing):
     plt.tight_layout()
     return fig
     
-def calculate_capacity(d, sf, layers):
-    perimeter = 3.14 * d
+def calculate_capacity(diameter, safety_factor, layers):
+    perimeter = 3.14 * diameter
     length = sum(layer["thickness"] for layer in layers)
+
     skin = sum(layer["cohesion"] * perimeter * layer["thickness"] for layer in layers)
-    base_area = 3.14 * (d / 2) ** 2
+    base_area = 3.14 * (diameter / 2) ** 2
     end = layers[-1]["cohesion"] * 9 * base_area
     ultimate = skin + end
 
+    allowable = round(ultimate / safety_factor, 2)
+
+    return allowable, round(length, 2)
+    
     # Inside calculation block
-    length = sum(layer["thickness"] for layer in layers)
-    volume_per_pile = calculate_concrete_volume(diameter, length)
     volume_per_pile = calculate_concrete_volume(diameter, total_depth)
     total_volume = volume_per_pile * piles_needed
     total_cost = estimate_pile_cost(total_volume, cost_rate)
@@ -78,8 +81,6 @@ def calculate_capacity(d, sf, layers):
     st.info(f"🧱 Concrete per Pile: {volume_per_pile} m³")
     st.info(f"🧱 Total Concrete Volume: {total_volume} m³")
     st.success(f"💵 Estimated Total Cost: ${total_cost}")
-    
-    return round(ultimate / sf, 2), round(length, 2)
 
 def calculate_group_efficiency(rows, cols, spacing, diameter):
     spacing_ratio = spacing / diameter
