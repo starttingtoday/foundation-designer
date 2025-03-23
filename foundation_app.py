@@ -74,6 +74,11 @@ def calculate_group_efficiency(rows, cols, spacing, diameter):
     efficiency = (rows * cols) / (1 + 0.1 * spacing_ratio)
     return round(min(efficiency, rows * cols), 2)
 
+def estimate_settlement(Q, L, diameter, Es):
+    A = 3.14 * (diameter / 2) ** 2
+    S = (Q * L) / (A * Es * 1000)  # Convert kPa to kN/m²
+    return round(S * 1000, 2)  # return in mm
+
 def generate_pdf(project_data, result_text):
     from reportlab.pdfgen import canvas
     from reportlab.lib.pagesizes import A4
@@ -152,6 +157,27 @@ if st.button("Show Pile Layout + Group Efficiency"):
     st.info(f"📉 Group Efficiency Factor: {efficiency}/{rows * cols}")
     st.success(f"🧱 Total Group Capacity: {group_capacity} kN")
 
+st.subheader("📉 Settlement Estimation")
+
+Es = st.number_input("Soil Modulus Es (kPa)", value=15000)
+if st.button("Estimate Settlement"):
+    Q = total_load  # total applied load from the building
+    L = sum(layer["thickness"] for layer in layers)
+    settlement = estimate_settlement(Q, L, diameter, Es)
+
+    st.success(f"📏 Estimated Settlement: {settlement} mm")
+
+if st.checkbox("📈 Show Load vs. Settlement Curve"):
+    loads = [Q * x for x in [0.2, 0.4, 0.6, 0.8, 1.0]]
+    settlements = [estimate_settlement(q, L, diameter, Es) for q in loads]
+
+    fig, ax = plt.subplots()
+    ax.plot(settlements, loads, marker='o')
+    ax.set_xlabel("Settlement (mm)")
+    ax.set_ylabel("Load (kN)")
+    ax.set_title("Load vs. Settlement")
+    ax.grid(True)
+    st.pyplot(fig)
 
 if st.button("📦 Download Project File"):
     project_data = {
