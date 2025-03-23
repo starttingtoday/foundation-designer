@@ -69,6 +69,8 @@ def calculate_capacity(d, sf, layers):
     ultimate = skin + end
 
     # Inside calculation block
+    length = sum(layer["thickness"] for layer in layers)
+    volume_per_pile = calculate_concrete_volume(diameter, length)
     volume_per_pile = calculate_concrete_volume(diameter, total_depth)
     total_volume = volume_per_pile * piles_needed
     total_cost = estimate_pile_cost(total_volume, cost_rate)
