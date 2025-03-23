@@ -60,9 +60,9 @@ if st.button("Calculate Pile Capacity"):
     }
 
     result_text = f"""Allowable Load per Pile: {capacity} kN
-Total Pile Length: {total_depth} m
-Required Number of Piles: {piles_needed}
-"""
+    Total Pile Length: {total_depth} m
+    Required Number of Piles: {piles_needed}
+    """
 
     # Generate PDF
     pdf_file = generate_pdf(project_data, result_text)
