@@ -150,14 +150,15 @@ st.markdown(
     """
 )
 
-tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
+tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs([
     "Design Calculator",
     "Layout & Efficiency",
     "Settlement",
     "Compare Designs",
     "BOQ",
     "Save / Export",
-    "Project Manager"
+    "Project Manager",
+    "Dashboard"
 ])
 
 with tab1:
@@ -397,3 +398,34 @@ with tab7:
             details = projects[selected]
             st.write(f"### 🔍 Details for: {selected}")
             st.json(details)
+
+with tab8:
+    st.subheader("📊 Project Summary Dashboard")
+
+    # 🔹 Show metrics for the last calculated design
+    if "calculated" in st.session_state:
+        calc = st.session_state["calculated"]
+        st.metric("Allowable Load per Pile (kN)", calc["capacity"])
+        st.metric("Required Piles", calc["piles_needed"])
+        st.metric("Total Concrete Volume (m³)", calc["total_volume"])
+        st.metric("Estimated Cost (USD)", f"${calc['total_cost']}")
+    else:
+        st.info("💡 Calculate a pile design in the Design tab to see dashboard results.")
+
+    st.markdown("---")
+
+    # 🔸 Visualize saved projects if they exist
+    if "saved_projects" in st.session_state and st.session_state["saved_projects"]:
+        st.markdown("### 📋 All Saved Designs")
+        df_projects = pd.DataFrame.from_dict(st.session_state["saved_projects"], orient="index")
+        st.dataframe(df_projects[["capacity", "piles_needed", "total_volume", "total_cost"]])
+
+        st.markdown("### 📉 Total Cost Comparison")
+        fig, ax = plt.subplots()
+        ax.bar(df_projects.index, df_projects["total_cost"], color="skyblue")
+        ax.set_ylabel("USD")
+        ax.set_title("💰 Total Cost per Saved Project")
+        ax.tick_params(axis='x', rotation=30)
+        st.pyplot(fig)
+    else:
+        st.info("💾 Save multiple designs to compare their total cost here.")
