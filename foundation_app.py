@@ -224,23 +224,23 @@ with tab1:
             "piles_needed": piles_needed,
             "volume_per_pile": volume_per_pile,
             "total_volume": total_volume,
-            "total_cost": total_cost
+            "total_cost": total_cost,
+            "layers": layers,
+            "diameter": diameter,
+            "safety_factor": safety_factor,
+            "total_load": total_load,
         }
 
-        project_name = st.text_input("Project Name", value="Unnamed Design")
-        if st.button("💾 Save This Design"):
-            if "calculated" in st.session_state:
-                st.session_state.setdefault("saved_projects", {})
-                st.session_state["saved_projects"][project_name] = {
-                    "diameter": diameter,
-                    "safety_factor": safety_factor,
-                    "total_load": total_load,
-                    "layers": layers,
-                    **st.session_state["calculated"]
-                }
-                st.success(f"✅ '{project_name}' saved!")
-            else:
-                st.warning("⚠️ Please calculate the design before saving.")
+
+    if "calculated" in st.session_state:
+    st.markdown("---")
+    st.subheader("💾 Save This Design")
+
+    project_name = st.text_input("Project Name", value="Unnamed Design")
+    if st.button("Save Now"):
+        st.session_state.setdefault("saved_projects", {})
+        st.session_state["saved_projects"][project_name] = st.session_state["calculated"]
+        st.success(f"✅ '{project_name}' saved!")
 
 with tab2:
 
@@ -397,4 +397,3 @@ with tab7:
             details = projects[selected]
             st.write(f"### 🔍 Details for: {selected}")
             st.json(details)
-
