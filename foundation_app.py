@@ -155,8 +155,8 @@ tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
     "Layout & Efficiency",
     "Settlement",
     "Compare Designs",
-    "Save / Export",
-    "BOQ"
+    "BOQ",
+    "Save / Export"
 ])
 
 with tab1:
@@ -316,6 +316,23 @@ with tab4:
         st.success("✅ Design comparison complete. Choose wisely!")
 
 with tab5:
+    st.subheader("📋 Bill of Quantities")
+
+    if st.session_state.get("boq_ready"):
+        df_boq = generate_boq(
+            st.session_state["piles"],
+            st.session_state["vol_per_pile"],
+            st.session_state["total_vol"],
+            concrete_rate=120.0,
+            rebar_rate=1.5,
+            labor_rate=50.0
+        )
+        st.dataframe(df_boq)
+        st.success("✅ BOQ generated. Prices are editable in code.")
+    else:
+        st.info("💡 Calculate pile design first in the Design tab.")
+
+with tab6:
     
     if st.button("📦 Download Project File"):
         project_data = {
@@ -343,21 +360,3 @@ with tab5:
         layers = loaded_data["soil_layers"]
     
         st.success("✅ Project loaded successfully!")
-
-with tab6:
-    st.subheader("📋 Bill of Quantities")
-
-    if st.session_state.get("boq_ready"):
-        df_boq = generate_boq(
-            st.session_state["piles"],
-            st.session_state["vol_per_pile"],
-            st.session_state["total_vol"],
-            concrete_rate=120.0,
-            rebar_rate=1.5,
-            labor_rate=50.0
-        )
-        st.dataframe(df_boq)
-        st.success("✅ BOQ generated. Prices are editable in code.")
-    else:
-        st.info("💡 Calculate pile design first in the Design tab.")
-
