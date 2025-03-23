@@ -188,7 +188,6 @@ with tab1:
     cost_rate = st.number_input("Cost per m³ of Concrete (USD)", value=120.0)
     
     # --- Buttons ---
-    st.markdown("---")
     if st.button("Calculate Pile Capacity"):
         capacity, total_depth = calculate_capacity(diameter, safety_factor, layers)
         piles_needed = int((total_load / capacity) + 1)
