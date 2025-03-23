@@ -13,6 +13,14 @@ import pandas as pd
 st.set_page_config(page_title="Pile Foundation Designer", layout="centered")
 st.title("🌍 Pile Foundation Designer")
 
+tab1, tab2, tab3, tab4, tab5 = st.tabs([
+    "Design Calculator",
+    "Layout & Efficiency",
+    "Settlement",
+    "Compare Designs",
+    "Save / Export"
+])
+
 # --- Soil Types Dictionary ---
 soil_types = {
     "Soft Clay": 25,
