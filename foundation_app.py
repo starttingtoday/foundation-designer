@@ -53,6 +53,26 @@ if st.button("Calculate Pile Capacity"):
     st.info(f"📏 Total Pile Length: {total_depth} m")
     st.warning(f"🔢 Required Number of Piles: {piles_needed}")
 
+    # Prepare report content
+    project_data = {
+        "project_name": "My Project",
+        "soil_layers": layers
+    }
+
+    result_text = f"""Allowable Load per Pile: {capacity} kN
+Total Pile Length: {total_depth} m
+Required Number of Piles: {piles_needed}
+"""
+
+    # Generate PDF
+    pdf_file = generate_pdf(project_data, result_text)
+
+    st.download_button(
+        label="📄 Download PDF Report",
+        data=pdf_file,
+        file_name="foundation_report.pdf",
+        mime="application/pdf"
+    )
 
 if st.button("📦 Download Project File"):
     project_data = {
@@ -79,49 +99,3 @@ if uploaded_file is not None:
     layers = loaded_data["soil_layers"]
 
     st.success("✅ Project loaded successfully!")
-
-def generate_pdf(project_data, result_text):
-    buffer = BytesIO()
-    c = canvas.Canvas(buffer, pagesize=A4)
-    width, height = A4
-
-    c.setFont("Helvetica-Bold", 14)
-    c.drawString(50, height - 50, "Pile Foundation Design Report")
-
-    c.setFont("Helvetica", 11)
-    y = height - 100
-    c.drawString(50, y, f"Project Name: {project_data.get('project_name', 'Unnamed')}")
-    y -= 30
-
-    c.drawString(50, y, "Soil Layers:")
-    for i, layer in enumerate(project_data["soil_layers"], start=1):
-        y -= 20
-        c.drawString(70, y, f"Layer {i}: {layer['type']}, {layer['thickness']} m, Cohesion: {layer['cohesion']} kPa")
-
-    y -= 40
-    for line in result_text.split("\n"):
-        c.drawString(50, y, line)
-        y -= 20
-
-    c.save()
-    buffer.seek(0)
-    return buffer
-
-project_data = {
-    "project_name": "My Project",
-    "soil_layers": layers
-}
-
-result_text = f"""Allowable Load per Pile: {capacity} kN
-Total Pile Length: {total_depth} m
-Required Number of Piles: {piles_needed}
-"""
-
-pdf_file = generate_pdf(project_data, result_text)
-
-st.download_button(
-    label="📄 Download PDF Report",
-    data=pdf_file,
-    file_name="foundation_report.pdf",
-    mime="application/pdf"
-)
