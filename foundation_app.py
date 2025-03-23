@@ -59,6 +59,11 @@ def draw_pile_layout(rows, cols, spacing):
     ax.grid(True)
     plt.tight_layout()
     return fig
+
+def calculate_concrete_volume(diameter, length):
+    radius = diameter / 2
+    volume = 3.14 * radius ** 2 * length
+    return round(volume, 2)
     
 def calculate_capacity(diameter, safety_factor, layers):
     perimeter = 3.14 * diameter
@@ -91,11 +96,6 @@ def estimate_settlement(Q, L, diameter, Es):
     A = 3.14 * (diameter / 2) ** 2
     S = (Q * L) / (A * Es * 1000)  # Convert kPa to kN/m²
     return round(S * 1000, 2)  # return in mm
-
-def calculate_concrete_volume(diameter, length):
-    radius = diameter / 2
-    volume = 3.14 * radius ** 2 * length
-    return round(volume, 2)
 
 def estimate_pile_cost(volume, cost_per_m3):
     return round(volume * cost_per_m3, 2)
