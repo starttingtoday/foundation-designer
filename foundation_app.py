@@ -200,6 +200,8 @@ with tab1:
         st.download_button("📄 Download PDF Report", data=pdf_file, file_name="foundation_report.pdf", mime="application/pdf")
 
 with tab2:
+
+    st.caption("Tip: Use standard pile spacing of 2.5–3.0m for typical foundations.")
     if st.button("Show Pile Layout + Group Efficiency"):
         capacity, total_depth = calculate_capacity(diameter, safety_factor, layers)
         piles_needed = int((total_load / capacity) + 1)
