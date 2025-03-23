@@ -4,6 +4,8 @@ from io import BytesIO
 import streamlit as st
 import json
 import datetime
+import math
+import matplotlib.pyplot as plt
 
 st.set_page_config(page_title="Pile Foundation Designer", layout="centered")
 
@@ -35,6 +37,28 @@ for i in range(int(layer_count)):
         thickness = st.number_input(f"Thickness (m) - Layer {i+1}", min_value=0.1, value=5.0, step=0.5, key=f"thick_{i}")
     cohesion = soil_types[soil]
     layers.append({"type": soil, "cohesion": cohesion, "thickness": thickness})
+
+def suggest_layout(n_piles):
+    rows = math.ceil(math.sqrt(n_piles))
+    cols = math.ceil(n_piles / rows)
+    return rows, cols
+
+def draw_pile_layout(rows, cols, spacing):
+    fig, ax = plt.subplots(figsize=(5, 5))
+    
+    for i in range(rows):
+        for j in range(cols):
+            x = j * spacing
+            y = i * spacing
+            ax.add_patch(plt.Circle((x, y), 0.3, color='gray'))
+
+    ax.set_aspect('equal')
+    ax.set_title(f"Pile Layout: {rows} x {cols}")
+    ax.set_xlabel("X (m)")
+    ax.set_ylabel("Y (m)")
+    ax.grid(True)
+    plt.tight_layout()
+    return fig
     
 def calculate_capacity(d, sf, layers):
     perimeter = 3.14 * d
@@ -105,6 +129,17 @@ if st.button("Calculate Pile Capacity"):
         file_name="foundation_report.pdf",
         mime="application/pdf"
     )
+
+if st.button("Show Pile Layout"):
+    capacity, total_depth = calculate_capacity(diameter, safety_factor, layers)
+    piles_needed = int((total_load / capacity) + 1)
+    rows, cols = suggest_layout(piles_needed)
+
+    spacing = st.number_input("Pile Spacing (m)", value=2.5, step=0.1)
+    st.write(f"🔢 Layout: {rows} rows × {cols} columns")
+
+    fig = draw_pile_layout(rows, cols, spacing)
+    st.pyplot(fig)
 
 if st.button("📦 Download Project File"):
     project_data = {
