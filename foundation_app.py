@@ -8,6 +8,7 @@ import datetime
 import math
 import matplotlib.pyplot as plt
 import pandas as pd
+import pydeck as pdk
 
 # --- Streamlit Config ---
 st.set_page_config(page_title="Pile Foundation Designer", layout="centered")
@@ -502,7 +503,7 @@ with tab9:
     if "community_projects" not in st.session_state:
         st.session_state["community_projects"] = []
     
-    st.title("🌍 KIM GroundWorks – Community")
+    st.title("🌍 Luna GroundWorks – Community")
     st.markdown("Share your pile design with the world. Contribute local knowledge and learn from others.")
     
     # --- Submit New Project ---
@@ -511,6 +512,8 @@ with tab9:
     with st.form("submit_form"):
         name = st.text_input("Project Name")
         country = st.text_input("Country / Region")
+        lat = st.number_input("Latitude (optional for map view)", value=0.0, format="%.6f")
+        lon = st.number_input("Longitude (optional for map view)", value=0.0, format="%.6f")
         diameter = st.number_input("Pile Diameter (m)", min_value=0.2, step=0.05)
         length = st.number_input("Pile Length (m)", min_value=1.0, step=0.5)
         load = st.number_input("Total Load (kN)", min_value=100.0, step=10.0)
@@ -521,6 +524,8 @@ with tab9:
             design = {
                 "name": name,
                 "country": country,
+                "lat": lat,
+                "lon": lon,
                 "diameter": diameter,
                 "length": length,
                 "load": load,
@@ -539,15 +544,48 @@ with tab9:
     if not projects:
         st.info("No community designs submitted yet. Be the first to contribute!")
     else:
-        for i, p in enumerate(projects[::-1]):  # Show latest first
+        # Filter section
+        st.markdown("### 🔍 Filter Designs")
+        filter_country = st.text_input("Filter by Country/Region")
+        min_load = st.number_input("Minimum Load (kN)", min_value=0.0, value=0.0, step=10.0)
+        max_load = st.number_input("Maximum Load (kN)", min_value=0.0, value=10000.0, step=10.0)
+    
+        filtered = [p for p in projects if
+                    (filter_country.lower() in p["country"].lower()) and
+                    (min_load <= p["load"] <= max_load)]
+    
+        # Show map if coordinates are present
+        coords = [p for p in filtered if p.get("lat") and p.get("lon")]
+        if coords:
+            st.markdown("### 🗺️ Map View")
+            df_map = pd.DataFrame(coords)
+            st.pydeck_chart(pdk.Deck(
+                map_style='mapbox://styles/mapbox/light-v9',
+                initial_view_state=pdk.ViewState(
+                    latitude=df_map["lat"].mean(),
+                    longitude=df_map["lon"].mean(),
+                    zoom=2,
+                    pitch=0,
+                ),
+                layers=[
+                    pdk.Layer(
+                        'ScatterplotLayer',
+                        data=df_map,
+                        get_position='[lon, lat]',
+                        get_color='[180, 0, 200, 140]',
+                        get_radius=20000,
+                    ),
+                ],
+            ))
+    
+        st.markdown("### 📋 Project List")
+        for i, p in enumerate(filtered[::-1]):  # Show latest first
             with st.expander(f"📌 {p['name']} ({p['country']})"):
                 st.markdown(f"**Pile Diameter:** {p['diameter']} m")
                 st.markdown(f"**Pile Length:** {p['length']} m")
                 st.markdown(f"**Total Load:** {p['load']} kN")
                 st.markdown(f"**Notes:** {p['notes'] if p['notes'] else '—'}")
                 st.caption(f"Submitted on {p['timestamp']}")
-                
-    st.caption("🌱 Powered by engineers. Shared for the world.")
 
 
 # To the engineers who design beneath the surface — this tool is for you.
