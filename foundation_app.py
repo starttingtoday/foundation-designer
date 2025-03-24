@@ -557,7 +557,7 @@ with tab9:
                 "notes": notes,
                 "user": st.session_state["user_name"],
                 "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
-                "parent_id": None  # root design
+                "parent_id": None
             }
             st.session_state["community_projects"].append(design)
             st.success("✅ Design shared successfully!")
@@ -634,7 +634,7 @@ with tab9:
             ))
     
         st.markdown("### 📋 Project List")
-        for i, p in enumerate(filtered[::-1]):  # Show latest first
+        for i, p in enumerate(filtered[::-1]):
             with st.expander(f"📌 {p['name']} ({p['country']})"):
                 badge = get_badge(p['user'])
                 st.markdown(f"**Pile Diameter:** {p['diameter']} m")
@@ -646,7 +646,6 @@ with tab9:
                 if st.button(f"🔁 Fork this Design", key=p['id']):
                     fork_design(p)
     
-        # View thread relationships
         st.markdown("---")
         st.subheader("🧵 Design Threads")
         root_projects = [p for p in projects if not p.get("parent_id")]
@@ -656,6 +655,15 @@ with tab9:
                 st.markdown(f"**🧩 {root['name']}** by `{root['user']}`")
                 for f in forks:
                     st.markdown(f"➡️ Forked by `{f['user']}` on {f['timestamp']} → *{f['name']}*")
+                    with st.expander(f"🔍 Compare with original ({root['name']})"):
+                        compare_df = pd.DataFrame([
+                            [root['diameter'], f['diameter']],
+                            [root['length'], f['length']],
+                            [root['load'], f['load']],
+                            [root['notes'], f['notes']]
+                        ], columns=["Original", "Fork"],
+                        index=["Diameter (m)", "Length (m)", "Load (kN)", "Notes"])
+                        st.dataframe(compare_df)
 
 
 # To the engineers who design beneath the surface — this tool is for you.
