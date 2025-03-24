@@ -706,10 +706,56 @@ with tab9:
                 st.bar_chart(tag_df.set_index("Tag"))
     else:
         st.info("No data to show. Submit or filter to see stats.")
+
+    # --- Evolution Tree ---
+    st.markdown("---")
+    st.subheader("🌳 Design Evolution Tree")
+    projects = st.session_state["community_projects"]
+    if projects:
+        dot = graphviz.Digraph()
+        for p in projects:
+            label = f"{p['name']}\nby {p['user']}"
+            dot.node(p['id'], label)
+            if p.get("parent_id"):
+                dot.edge(p["parent_id"], p["id"])
+        st.graphviz_chart(dot)
+    else:
+        st.info("No designs to show.")
+    
+    # --- Root Project Preview (Tag Sync Fix) ---
+    st.markdown("---")
+    st.subheader("📋 Community Root Designs")
+    root_projects = [p for p in projects if not p.get("parent_id")]
+    for root in root_projects:
+        with st.expander(f"📌 {root['name']} by {root['user']}"):
+            st.markdown(f"**Diameter:** {root['diameter']} m  ")
+            st.markdown(f"**Length:** {root['length']} m  ")
+            st.markdown(f"**Load:** {root['load']} kN  ")
+            st.markdown(f"**Notes:** {root['notes'] or '—'}")
+            if st.button(f"🔁 Fork this Design", key=f"fork_root_{root['id']}"):
+                fork_design(root)
+                st.rerun()
+    
+    # --- Fork View with Tag Sync Fix ---
+    st.markdown("---")
+    st.subheader("🧵 Forks + Tags")
+    for root in root_projects:
+        forks = [f for f in projects if f.get("parent_id") == root["id"]]
+        if forks:
+            for f in forks:
+                with st.expander(f"🔀 {f['name']} by {f['user']}"):
+                    st.markdown(f"**Diameter:** {f['diameter']} m, **Length:** {f['length']} m, **Load:** {f['load']} kN")
+                    st.markdown(f"**Notes:** {f['notes']}")
+    
+                    # ✅ Fixed Tag Sync
+                    tag_options = ["Student Design", "Peer Reviewed", "Green Foundation"]
+                    selected_tags = st.multiselect("🏷️ Tags", tag_options, default=st.session_state["tags"][f['id']], key=f"tag_{f['id']}")
+                    st.session_state["tags"][f['id']] = selected_tags
+                    if selected_tags:
+                        st.info("Tags: " + ", ".join(selected_tags))
     
 # To the engineers who design beneath the surface — this tool is for you.
 # Build boldly. Build sustainably. Build with clarity.
 # – KIM
-
 
 
