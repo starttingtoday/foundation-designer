@@ -695,6 +695,12 @@ with tab9:
                         st.markdown(f"- _{c['author']}_: {c['text']} ({c['time']})")
 
 with tab10:
+    # Initialize session storage
+    if "community_projects" not in st.session_state:
+        st.session_state["community_projects"] = []
+    if "user_name" not in st.session_state:
+        st.session_state["user_name"] = "Anonymous Engineer"
+
     st.title("🗺️ Global Community Map")
     st.markdown("### 📍 Where engineers build, share, and inspire")
     
