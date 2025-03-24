@@ -510,6 +510,10 @@ with tab9:
         st.session_state["notifications"] = []
     if "comments" not in st.session_state:
         st.session_state["comments"] = defaultdict(list)
+    if "reactions" not in st.session_state:
+        st.session_state["reactions"] = defaultdict(lambda: {"👍": 0, "💡": 0, "🧪": 0})
+    if "tags" not in st.session_state:
+        st.session_state["tags"] = defaultdict(list)
     
     st.title("🌍 Luna GroundWorks – Community")
     st.markdown("Share your pile design with the world. Contribute local knowledge and learn from others.")
@@ -592,75 +596,62 @@ with tab9:
         })
         st.success("✅ Design forked and user notified!")
     
-    # --- View Shared Projects ---
+    # --- View Threads ---
     st.markdown("---")
-    st.subheader("🌐 Shared Designs")
+    st.subheader("🧵 Design Threads + Tags & Reactions")
     
     projects = st.session_state["community_projects"]
+    root_projects = [p for p in projects if not p.get("parent_id")]
+    for root in root_projects:
+        forks = [f for f in projects if f.get("parent_id") == root["id"]]
+        if forks:
+            st.markdown(f"**🧩 {root['name']}** by `{root['user']}`")
+            for f in forks:
+                st.markdown(f"➡️ Forked by `{f['user']}` on {f['timestamp']} → *{f['name']}*")
+                with st.expander("Compare + Comments + Tags + Reactions"):
+                    compare_df = pd.DataFrame([
+                        [root['diameter'], f['diameter']],
+                        [root['length'], f['length']],
+                        [root['load'], f['load']],
+                        [root['notes'], f['notes']]
+                    ], columns=["Original", "Fork"],
+                    index=["Diameter (m)", "Length (m)", "Load (kN)", "Notes"])
+                    st.dataframe(compare_df)
     
-    if not projects:
-        st.info("No community designs submitted yet. Be the first to contribute!")
-    else:
-        st.markdown("### 🧑‍💼 Your Design History")
-        user_designs = [p for p in projects if p["user"] == st.session_state["user_name"]]
-        if user_designs:
-            df_user = pd.DataFrame(user_designs)
-            st.dataframe(df_user[["name", "country", "load", "timestamp"]].sort_values(by="timestamp", ascending=False))
-        else:
-            st.info("You haven’t shared any designs yet.")
+                    # Reactions
+                    st.markdown("### ❤️ Reactions")
+                    r = st.session_state["reactions"][f['id']]
+                    col1, col2, col3 = st.columns(3)
+                    if col1.button(f"👍 Helpful ({r['👍']})", key=f"like_{f['id']}"):
+                        r['👍'] += 1
+                    if col2.button(f"💡 Innovative ({r['💡']})", key=f"idea_{f['id']}"):
+                        r['💡'] += 1
+                    if col3.button(f"🧪 Site-Tested ({r['🧪']})", key=f"test_{f['id']}"):
+                        r['🧪'] += 1
     
-        # Filter
-        st.markdown("### 🔍 Filter Designs")
-        filter_country = st.text_input("Filter by Country/Region")
-        min_load = st.number_input("Minimum Load (kN)", min_value=0.0, value=0.0)
-        max_load = st.number_input("Maximum Load (kN)", min_value=0.0, value=10000.0)
+                    # Tags
+                    st.markdown("### 🏷️ Tags")
+                    tag_options = ["Student Design", "Peer Reviewed", "Field-Tested", "Green Foundation"]
+                    selected_tags = st.multiselect("Add tags to this fork:", tag_options, key=f"tags_{f['id']}")
+                    if selected_tags:
+                        st.session_state["tags"][f['id']] = list(set(st.session_state["tags"][f['id']] + selected_tags))
+                    if st.session_state["tags"][f['id']]:
+                        st.info("Tags: " + ", ".join(st.session_state["tags"][f['id']]))
     
-        filtered = [p for p in projects if filter_country.lower() in p["country"].lower() and min_load <= p["load"] <= max_load]
-        for p in filtered[::-1]:
-            with st.expander(f"📌 {p['name']} by {p['user']}"):
-                st.markdown(f"**Pile Diameter:** {p['diameter']} m")
-                st.markdown(f"**Pile Length:** {p['length']} m")
-                st.markdown(f"**Load:** {p['load']} kN")
-                st.markdown(f"**Notes:** {p['notes']}")
-                if st.button(f"🔁 Fork this Design", key=p['id']):
-                    fork_design(p)
+                    # Comments
+                    st.markdown("### 💬 Comments")
+                    comment_key = f["id"]
+                    new_comment = st.text_input("Add a comment:", key=f"comment_{comment_key}")
+                    if st.button("Post", key=f"btn_{comment_key}") and new_comment:
+                        st.session_state["comments"][comment_key].append({
+                            "author": st.session_state["user_name"],
+                            "text": new_comment,
+                            "time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+                        })
+                        st.success("Comment posted!")
+                    for c in st.session_state["comments"][comment_key]:
+                        st.markdown(f"- _{c['author']}_: {c['text']} ({c['time']})")
     
-        # Design Threads and Comments
-        st.markdown("---")
-        st.subheader("🧵 Design Threads")
-        root_projects = [p for p in projects if not p.get("parent_id")]
-        for root in root_projects:
-            forks = [f for f in projects if f.get("parent_id") == root["id"]]
-            if forks:
-                st.markdown(f"**🧩 {root['name']}** by `{root['user']}`")
-                for f in forks:
-                    st.markdown(f"➡️ Forked by `{f['user']}` on {f['timestamp']} → *{f['name']}*")
-                    with st.expander(f"🔍 Compare + Comment"):
-                        compare_df = pd.DataFrame([
-                            [root['diameter'], f['diameter']],
-                            [root['length'], f['length']],
-                            [root['load'], f['load']],
-                            [root['notes'], f['notes']]
-                        ], columns=["Original", "Fork"],
-                        index=["Diameter (m)", "Length (m)", "Load (kN)", "Notes"])
-                        st.dataframe(compare_df)
-    
-                        comment_key = f["id"]
-                        new_comment = st.text_input(f"💬 Add a comment", key=f"comment_{comment_key}")
-                        if st.button("Post Comment", key=f"btn_{comment_key}") and new_comment:
-                            st.session_state["comments"][comment_key].append({
-                                "author": st.session_state["user_name"],
-                                "text": new_comment,
-                                "time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
-                            })
-                            st.success("Comment posted!")
-    
-                        if st.session_state["comments"].get(comment_key):
-                            st.markdown("**📝 Comments:**")
-                            for c in st.session_state["comments"][comment_key]:
-                                st.markdown(f"- _{c['author']}_: {c['text']} ({c['time']})")
-
-
 # To the engineers who design beneath the surface — this tool is for you.
 # Build boldly. Build sustainably. Build with clarity.
 # – KIM
