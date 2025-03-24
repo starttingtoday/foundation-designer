@@ -202,7 +202,7 @@ _ = translations[language]
 
 st.title(_["title"])
 
-tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9 = st.tabs([
+tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10 = st.tabs([
     "Design Calculator",
     "Layout & Efficiency",
     "Settlement",
@@ -211,7 +211,8 @@ tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9 = st.tabs([
     "Save / Export",
     "Project Manager",
     "Dashboard",
-    "Community"
+    "Community",
+    "Geo Map"
 ])
 
 with tab1:
@@ -693,6 +694,7 @@ with tab9:
                     for c in st.session_state["comments"][comment_key]:
                         st.markdown(f"- _{c['author']}_: {c['text']} ({c['time']})")
 
+with tab10:
     st.title("🗺️ Global Community Map")
     st.markdown("### 📍 Where engineers build, share, and inspire")
     
