@@ -241,7 +241,7 @@ with tab1:
     
     # --- Buttons ---
     if st.button("Calculate Pile Capacity"):
-        capacity, total_depth = calculate_capacity(diameter, safety_factor, layers)
+        capacity, total_depth, perimeter, base_area, skin, end, ultimate = calculate_capacity(diameter, safety_factor, layers)
         piles_needed = int((total_load / capacity) + 1)
         volume_per_pile = calculate_concrete_volume(diameter, total_depth)
         total_volume = volume_per_pile * piles_needed
@@ -310,7 +310,7 @@ with tab2:
 
     st.caption("Tip: Use standard pile spacing of 2.5–3.0m for typical foundations.")
     if st.button("Show Pile Layout + Group Efficiency"):
-        capacity, total_depth = calculate_capacity(diameter, safety_factor, layers)
+        capacity, total_depth, perimeter, base_area, skin, end, ultimate = calculate_capacity(diameter, safety_factor, layers)
         piles_needed = int((total_load / capacity) + 1)
         rows, cols = suggest_layout(piles_needed)
     
