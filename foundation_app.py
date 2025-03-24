@@ -495,3 +495,8 @@ with tab8:
         st.pyplot(fig)
     else:
         st.info("💾 Save multiple designs to compare their total cost here.")
+
+    # To the engineers who design beneath the surface — this tool is for you.
+    # Build boldly. Build sustainably. Build with clarity.
+    # – KIM
+
