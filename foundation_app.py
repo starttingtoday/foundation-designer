@@ -506,6 +506,10 @@ with tab9:
         st.session_state["community_projects"] = []
     if "user_name" not in st.session_state:
         st.session_state["user_name"] = "Anonymous Engineer"
+    if "notifications" not in st.session_state:
+        st.session_state["notifications"] = []
+    if "comments" not in st.session_state:
+        st.session_state["comments"] = defaultdict(list)
     
     st.title("🌍 Luna GroundWorks – Community")
     st.markdown("Share your pile design with the world. Contribute local knowledge and learn from others.")
@@ -514,6 +518,15 @@ with tab9:
     st.sidebar.markdown("### 👤 Your Profile")
     st.session_state["user_name"] = st.sidebar.text_input("Name or Alias", st.session_state["user_name"])
     st.sidebar.caption("Your name will be shown on shared designs.")
+    
+    # --- Notifications ---
+    st.sidebar.markdown("### 🔔 Notifications")
+    user_notifications = [n for n in st.session_state["notifications"] if n["to"] == st.session_state["user_name"]]
+    if user_notifications:
+        for note in user_notifications[::-1]:
+            st.sidebar.info(f"🔁 {note['from']} forked your design '{note['project']}'")
+    else:
+        st.sidebar.caption("No new activity yet.")
     
     # --- Badge Counter ---
     def get_badge(user):
@@ -571,7 +584,13 @@ with tab9:
         fork["parent_id"] = original["id"]
         fork["name"] += " (Forked)"
         st.session_state["community_projects"].append(fork)
-        st.success("✅ Design forked successfully!")
+        st.session_state["notifications"].append({
+            "to": original["user"],
+            "from": fork["user"],
+            "project": original["name"],
+            "time": fork["timestamp"]
+        })
+        st.success("✅ Design forked and user notified!")
     
     # --- View Shared Projects ---
     st.markdown("---")
@@ -582,15 +601,6 @@ with tab9:
     if not projects:
         st.info("No community designs submitted yet. Be the first to contribute!")
     else:
-        # Leaderboard
-        st.markdown("### 🏆 Contributor Leaderboard")
-        contributors = Counter([p["user"] for p in projects])
-        leaderboard = pd.DataFrame(contributors.items(), columns=["User", "Submissions"])
-        leaderboard["Badge"] = leaderboard["User"].apply(get_badge)
-        leaderboard = leaderboard.sort_values(by="Submissions", ascending=False)
-        st.dataframe(leaderboard, use_container_width=True)
-    
-        # User profile view
         st.markdown("### 🧑‍💼 Your Design History")
         user_designs = [p for p in projects if p["user"] == st.session_state["user_name"]]
         if user_designs:
@@ -599,53 +609,23 @@ with tab9:
         else:
             st.info("You haven’t shared any designs yet.")
     
-        # Filter section
+        # Filter
         st.markdown("### 🔍 Filter Designs")
         filter_country = st.text_input("Filter by Country/Region")
-        min_load = st.number_input("Minimum Load (kN)", min_value=0.0, value=0.0, step=10.0)
-        max_load = st.number_input("Maximum Load (kN)", min_value=0.0, value=10000.0, step=10.0)
+        min_load = st.number_input("Minimum Load (kN)", min_value=0.0, value=0.0)
+        max_load = st.number_input("Maximum Load (kN)", min_value=0.0, value=10000.0)
     
-        filtered = [p for p in projects if
-                    (filter_country.lower() in p["country"].lower()) and
-                    (min_load <= p["load"] <= max_load)]
-    
-        # Show map if coordinates are present
-        coords = [p for p in filtered if p.get("lat") and p.get("lon")]
-        if coords:
-            st.markdown("### 🗺️ Map View")
-            df_map = pd.DataFrame(coords)
-            st.pydeck_chart(pdk.Deck(
-                map_style='mapbox://styles/mapbox/light-v9',
-                initial_view_state=pdk.ViewState(
-                    latitude=df_map["lat"].mean(),
-                    longitude=df_map["lon"].mean(),
-                    zoom=2,
-                    pitch=0,
-                ),
-                layers=[
-                    pdk.Layer(
-                        'ScatterplotLayer',
-                        data=df_map,
-                        get_position='[lon, lat]',
-                        get_color='[180, 0, 200, 140]',
-                        get_radius=20000,
-                    ),
-                ],
-            ))
-    
-        st.markdown("### 📋 Project List")
-        for i, p in enumerate(filtered[::-1]):
-            with st.expander(f"📌 {p['name']} ({p['country']})"):
-                badge = get_badge(p['user'])
+        filtered = [p for p in projects if filter_country.lower() in p["country"].lower() and min_load <= p["load"] <= max_load]
+        for p in filtered[::-1]:
+            with st.expander(f"📌 {p['name']} by {p['user']}"):
                 st.markdown(f"**Pile Diameter:** {p['diameter']} m")
                 st.markdown(f"**Pile Length:** {p['length']} m")
-                st.markdown(f"**Total Load:** {p['load']} kN")
-                st.markdown(f"**Notes:** {p['notes'] if p['notes'] else '—'}")
-                st.markdown(f"👤 Shared by: `{p['user']}` {'🔹' + badge if badge else ''}")
-                st.caption(f"Submitted on {p['timestamp']}")
+                st.markdown(f"**Load:** {p['load']} kN")
+                st.markdown(f"**Notes:** {p['notes']}")
                 if st.button(f"🔁 Fork this Design", key=p['id']):
                     fork_design(p)
     
+        # Design Threads and Comments
         st.markdown("---")
         st.subheader("🧵 Design Threads")
         root_projects = [p for p in projects if not p.get("parent_id")]
@@ -655,7 +635,7 @@ with tab9:
                 st.markdown(f"**🧩 {root['name']}** by `{root['user']}`")
                 for f in forks:
                     st.markdown(f"➡️ Forked by `{f['user']}` on {f['timestamp']} → *{f['name']}*")
-                    with st.expander(f"🔍 Compare with original ({root['name']})"):
+                    with st.expander(f"🔍 Compare + Comment"):
                         compare_df = pd.DataFrame([
                             [root['diameter'], f['diameter']],
                             [root['length'], f['length']],
@@ -664,6 +644,21 @@ with tab9:
                         ], columns=["Original", "Fork"],
                         index=["Diameter (m)", "Length (m)", "Load (kN)", "Notes"])
                         st.dataframe(compare_df)
+    
+                        comment_key = f["id"]
+                        new_comment = st.text_input(f"💬 Add a comment", key=f"comment_{comment_key}")
+                        if st.button("Post Comment", key=f"btn_{comment_key}") and new_comment:
+                            st.session_state["comments"][comment_key].append({
+                                "author": st.session_state["user_name"],
+                                "text": new_comment,
+                                "time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+                            })
+                            st.success("Comment posted!")
+    
+                        if st.session_state["comments"].get(comment_key):
+                            st.markdown("**📝 Comments:**")
+                            for c in st.session_state["comments"][comment_key]:
+                                st.markdown(f"- _{c['author']}_: {c['text']} ({c['time']})")
 
 
 # To the engineers who design beneath the surface — this tool is for you.
