@@ -588,13 +588,15 @@ with tab9:
         return r["👍"] + r["💡"] + r["🧪"]
     
     sorted_projects = sorted(projects, key=lambda p: total_reactions(p["id"]), reverse=True)
-    st.markdown("### 🔥 Trending Forks")
     
+    st.markdown("### 🔥 Trending Forks")
     for p in sorted_projects[:3]:
         st.markdown(f"**{p['name']}** by `{p['user']}` with {total_reactions(p['id'])} reactions")
-    st.markdown("### 📋 All Shared Designs (No Forks Yet)")
-
+    
+    # ✅ Define this BEFORE using root_projects below
     root_projects = [p for p in projects if not p.get("parent_id")]
+    
+    st.markdown("### 📋 All Shared Designs (No Forks Yet)")
     for root in root_projects:
         forks = [f for f in projects if f.get("parent_id") == root["id"]]
         if not forks:
@@ -607,6 +609,7 @@ with tab9:
                 if st.button(f"🔁 Fork this Design", key=f"fork_root_{root['id']}"):
                     fork_design(root)
                     st.rerun()
+
 
     
     # Threads
