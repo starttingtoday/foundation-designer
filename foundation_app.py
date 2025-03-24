@@ -506,7 +506,7 @@ with tab9:
     if "user_name" not in st.session_state:
         st.session_state["user_name"] = "Anonymous Engineer"
     
-    st.title("🌍 GroundWorks – Community")
+    st.title("🌍 Luna GroundWorks – Community")
     st.markdown("Share your pile design with the world. Contribute local knowledge and learn from others.")
     
     # --- User Identity ---
@@ -575,6 +575,15 @@ with tab9:
         leaderboard["Badge"] = leaderboard["User"].apply(get_badge)
         leaderboard = leaderboard.sort_values(by="Submissions", ascending=False)
         st.dataframe(leaderboard, use_container_width=True)
+    
+        # User profile view
+        st.markdown("### 🧑‍💼 Your Design History")
+        user_designs = [p for p in projects if p["user"] == st.session_state["user_name"]]
+        if user_designs:
+            df_user = pd.DataFrame(user_designs)
+            st.dataframe(df_user[["name", "country", "load", "timestamp"]].sort_values(by="timestamp", ascending=False))
+        else:
+            st.info("You haven’t shared any designs yet.")
     
         # Filter section
         st.markdown("### 🔍 Filter Designs")
