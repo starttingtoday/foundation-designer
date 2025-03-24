@@ -604,6 +604,8 @@ with tab9:
         return r["👍"] + r["💡"] + r["🧪"]
     
     sorted_projects = sorted(projects, key=lambda p: total_reactions(p["id"]), reverse=True)
+
+    st.caption(f"🔎 Showing {len(projects)} design(s) matching filters.")
     
     st.markdown("### 🔥 Trending Forks")
     for p in sorted_projects[:3]:
