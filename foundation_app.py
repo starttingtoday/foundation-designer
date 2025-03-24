@@ -589,22 +589,23 @@ with tab9:
     
     sorted_projects = sorted(projects, key=lambda p: total_reactions(p["id"]), reverse=True)
     st.markdown("### 🔥 Trending Forks")
-    for p in sorted_projects[:3]:
-        st.markdown(f"**{p['name']}** by `{p['user']}` with {total_reactions(p['id'])} reactions")
-    st.markdown("### 📋 All Shared Designs (No Forks Yet)")
     
-    for root in root_projects:
-        forks = [f for f in projects if f.get("parent_id") == root["id"]]
-        if not forks:
-            with st.expander(f"{root['name']} by {root['user']}"):
-                st.markdown(f"**Diameter:** {root['diameter']} m  \n"
-                            f"**Length:** {root['length']} m  \n"
-                            f"**Load:** {root['load']} kN  \n"
-                            f"**Notes:** {root['notes'] or '—'}  \n"
-                            f"**Tags:** {', '.join(st.session_state['tags'][root['id']]) if st.session_state['tags'].get(root['id']) else '—'}")
-                if st.button(f"🔁 Fork this Design", key=f"fork_root_{root['id']}"):
-                    fork_design(root)
-                    st.rerun()
+        for p in sorted_projects[:3]:
+            st.markdown(f"**{p['name']}** by `{p['user']}` with {total_reactions(p['id'])} reactions")
+        st.markdown("### 📋 All Shared Designs (No Forks Yet)")
+        
+        for root in root_projects:
+            forks = [f for f in projects if f.get("parent_id") == root["id"]]
+            if not forks:
+                with st.expander(f"{root['name']} by {root['user']}"):
+                    st.markdown(f"**Diameter:** {root['diameter']} m  \n"
+                                f"**Length:** {root['length']} m  \n"
+                                f"**Load:** {root['load']} kN  \n"
+                                f"**Notes:** {root['notes'] or '—'}  \n"
+                                f"**Tags:** {', '.join(st.session_state['tags'][root['id']]) if st.session_state['tags'].get(root['id']) else '—'}")
+                    if st.button(f"🔁 Fork this Design", key=f"fork_root_{root['id']}"):
+                        fork_design(root)
+                        st.rerun()
 
     
     # Threads
