@@ -305,6 +305,7 @@ with tab1:
             st.session_state.setdefault("saved_projects", {})
             st.session_state["saved_projects"][project_name] = st.session_state["calculated"]
             st.success(f"✅ '{project_name}' saved!")
+            st.caption("💡 Your knowledge grows as your design evolves.")
 
 with tab2:
 
@@ -464,6 +465,8 @@ with tab7:
 
 with tab8:
     st.subheader("📊 Project Summary Dashboard")
+    st.caption("Built by KIM — now used by hundreds of engineers worldwide.")
+
 
     # 🔹 Show metrics for the last calculated design
     if "calculated" in st.session_state:
