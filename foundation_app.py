@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import pydeck as pdk
 from collections import Counter
+import uuid
 
 # --- Streamlit Config ---
 st.set_page_config(page_title="Pile Foundation Designer", layout="centered")
@@ -545,6 +546,7 @@ with tab9:
     
         if submitted:
             design = {
+                "id": str(uuid.uuid4()),
                 "name": name,
                 "country": country,
                 "lat": lat,
@@ -554,10 +556,22 @@ with tab9:
                 "load": load,
                 "notes": notes,
                 "user": st.session_state["user_name"],
-                "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+                "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
+                "parent_id": None  # root design
             }
             st.session_state["community_projects"].append(design)
             st.success("✅ Design shared successfully!")
+    
+    # --- Fork Logic ---
+    def fork_design(original):
+        fork = original.copy()
+        fork["id"] = str(uuid.uuid4())
+        fork["user"] = st.session_state["user_name"]
+        fork["timestamp"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+        fork["parent_id"] = original["id"]
+        fork["name"] += " (Forked)"
+        st.session_state["community_projects"].append(fork)
+        st.success("✅ Design forked successfully!")
     
     # --- View Shared Projects ---
     st.markdown("---")
@@ -629,6 +643,19 @@ with tab9:
                 st.markdown(f"**Notes:** {p['notes'] if p['notes'] else '—'}")
                 st.markdown(f"👤 Shared by: `{p['user']}` {'🔹' + badge if badge else ''}")
                 st.caption(f"Submitted on {p['timestamp']}")
+                if st.button(f"🔁 Fork this Design", key=p['id']):
+                    fork_design(p)
+    
+        # View thread relationships
+        st.markdown("---")
+        st.subheader("🧵 Design Threads")
+        root_projects = [p for p in projects if not p.get("parent_id")]
+        for root in root_projects:
+            forks = [f for f in projects if f.get("parent_id") == root["id"]]
+            if forks:
+                st.markdown(f"**🧩 {root['name']}** by `{root['user']}`")
+                for f in forks:
+                    st.markdown(f"➡️ Forked by `{f['user']}` on {f['timestamp']} → *{f['name']}*")
 
 
 # To the engineers who design beneath the surface — this tool is for you.
