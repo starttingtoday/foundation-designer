@@ -512,16 +512,17 @@ with tab9:
         st.session_state["comments"] = defaultdict(list)
     if "reactions" not in st.session_state:
         st.session_state["reactions"] = defaultdict(lambda: {"👍": 0, "💡": 0, "🧪": 0})
+    if "reaction_authors" not in st.session_state:
+        st.session_state["reaction_authors"] = defaultdict(lambda: {"👍": [], "💡": [], "🧪": []})
     if "tags" not in st.session_state:
         st.session_state["tags"] = defaultdict(list)
     
     st.title("🌍 Luna GroundWorks – Community")
-    st.markdown("Share your pile design with the world. Contribute local knowledge and learn from others.")
+    st.markdown("### 🛠️ v1.1 — The Trust Layer")
     
-    # --- User Identity ---
+    # --- User Profile ---
     st.sidebar.markdown("### 👤 Your Profile")
     st.session_state["user_name"] = st.sidebar.text_input("Name or Alias", st.session_state["user_name"])
-    st.sidebar.caption("Your name will be shown on shared designs.")
     
     # --- Notifications ---
     st.sidebar.markdown("### 🔔 Notifications")
@@ -532,35 +533,18 @@ with tab9:
     else:
         st.sidebar.caption("No new activity yet.")
     
-    # --- Badge Counter ---
-    def get_badge(user):
-        user_designs = [p for p in st.session_state["community_projects"] if p["user"] == user]
-        count = len(user_designs)
-        if count == 0:
-            return ""
-        elif count == 1:
-            return "🌱 First Design"
-        elif count < 5:
-            return "🔧 Contributor"
-        elif count < 10:
-            return "🏗️ Foundation Builder"
-        else:
-            return "🌍 Global Contributor"
-    
-    # --- Submit New Project ---
+    # --- Submit a Design ---
     st.subheader("📤 Submit a Design")
-    
     with st.form("submit_form"):
         name = st.text_input("Project Name")
         country = st.text_input("Country / Region")
-        lat = st.number_input("Latitude (optional for map view)", value=0.0, format="%.6f")
-        lon = st.number_input("Longitude (optional for map view)", value=0.0, format="%.6f")
+        lat = st.number_input("Latitude (optional)", value=0.0, format="%.6f")
+        lon = st.number_input("Longitude (optional)", value=0.0, format="%.6f")
         diameter = st.number_input("Pile Diameter (m)", min_value=0.2, step=0.05)
         length = st.number_input("Pile Length (m)", min_value=1.0, step=0.5)
         load = st.number_input("Total Load (kN)", min_value=100.0, step=10.0)
         notes = st.text_area("Notes (optional)")
         submitted = st.form_submit_button("🌱 Share This Design")
-    
         if submitted:
             design = {
                 "id": str(uuid.uuid4()),
@@ -577,9 +561,9 @@ with tab9:
                 "parent_id": None
             }
             st.session_state["community_projects"].append(design)
-            st.success("✅ Design shared successfully!")
+            st.success("✅ Design shared!")
     
-    # --- Fork Logic ---
+    # --- Fork Function ---
     def fork_design(original):
         fork = original.copy()
         fork["id"] = str(uuid.uuid4())
@@ -589,69 +573,80 @@ with tab9:
         fork["name"] += " (Forked)"
         st.session_state["community_projects"].append(fork)
         st.session_state["notifications"].append({
-            "to": original["user"],
-            "from": fork["user"],
-            "project": original["name"],
-            "time": fork["timestamp"]
+            "to": original["user"], "from": fork["user"], "project": original["name"], "time": fork["timestamp"]
         })
-        st.success("✅ Design forked and user notified!")
+        st.success("✅ Forked & user notified")
     
-    # --- View Threads ---
+    # --- Design Threads + Trust Layer ---
     st.markdown("---")
-    st.subheader("🧵 Design Threads + Tags & Reactions")
-    
+    st.subheader("🧵 Design Threads + 🔍 Filters + 🏷️ Tags + ❤️ Reactions")
     projects = st.session_state["community_projects"]
+    
+    # Sort by most reactions
+    def total_reactions(pid):
+        r = st.session_state["reactions"][pid]
+        return r["👍"] + r["💡"] + r["🧪"]
+    
+    sorted_projects = sorted(projects, key=lambda p: total_reactions(p["id"]), reverse=True)
+    st.markdown("### 🔥 Trending Forks")
+    for p in sorted_projects[:3]:
+        st.markdown(f"**{p['name']}** by `{p['user']}` with {total_reactions(p['id'])} reactions")
+    
+    # Threads
     root_projects = [p for p in projects if not p.get("parent_id")]
     for root in root_projects:
         forks = [f for f in projects if f.get("parent_id") == root["id"]]
         if forks:
-            st.markdown(f"**🧩 {root['name']}** by `{root['user']}`")
+            st.markdown(f"### 🧩 {root['name']} by `{root['user']}`")
             for f in forks:
-                st.markdown(f"➡️ Forked by `{f['user']}` on {f['timestamp']} → *{f['name']}*")
-                with st.expander("Compare + Comments + Tags + Reactions"):
-                    compare_df = pd.DataFrame([
-                        [root['diameter'], f['diameter']],
-                        [root['length'], f['length']],
-                        [root['load'], f['load']],
-                        [root['notes'], f['notes']]
-                    ], columns=["Original", "Fork"],
-                    index=["Diameter (m)", "Length (m)", "Load (kN)", "Notes"])
-                    st.dataframe(compare_df)
+                r = st.session_state["reactions"][f['id']]
+                badge = "✅ Community Verified" if r["👍"] >= 10 else ""
+                st.markdown(f"➡️ *{f['name']}* by `{f['user']}` on {f['timestamp']} {badge}")
+                with st.expander("🔍 Inspect Fork"):
+                    st.markdown(f"**Diameter:** {f['diameter']} m, **Length:** {f['length']} m, **Load:** {f['load']} kN")
+                    st.markdown(f"**Notes:** {f['notes']}")
     
                     # Reactions
-                    st.markdown("### ❤️ Reactions")
-                    r = st.session_state["reactions"][f['id']]
                     col1, col2, col3 = st.columns(3)
                     if col1.button(f"👍 Helpful ({r['👍']})", key=f"like_{f['id']}"):
                         r['👍'] += 1
+                        st.session_state["reaction_authors"][f['id']]['👍'].append(st.session_state['user_name'])
                         st.rerun()
                     if col2.button(f"💡 Innovative ({r['💡']})", key=f"idea_{f['id']}"):
                         r['💡'] += 1
+                        st.session_state["reaction_authors"][f['id']]['💡'].append(st.session_state['user_name'])
                         st.rerun()
                     if col3.button(f"🧪 Site-Tested ({r['🧪']})", key=f"test_{f['id']}"):
                         r['🧪'] += 1
+                        st.session_state["reaction_authors"][f['id']]['🧪'].append(st.session_state['user_name'])
                         st.rerun()
     
-                    # Tags
-                    st.markdown("### 🏷️ Tags")
-                    tag_options = ["Student Design", "Peer Reviewed", "Field-Tested", "Green Foundation"]
-                    selected_tags = st.multiselect("Add tags to this fork:", tag_options, key=f"tags_{f['id']}")
+                    # Tagging
+                    tag_options = ["Student Design", "Peer Reviewed", "Green Foundation"]
+                    selected_tags = st.multiselect("🏷️ Add Tags", tag_options, key=f"tag_{f['id']}")
                     if selected_tags:
                         st.session_state["tags"][f['id']] = list(set(st.session_state["tags"][f['id']] + selected_tags))
-                    if st.session_state["tags"][f['id']]:
+                    if st.session_state["tags"][f['id"]]:
                         st.info("Tags: " + ", ".join(st.session_state["tags"][f['id']]))
+    
+                    # Reaction Details
+                    st.markdown("### 👥 Who Reacted")
+                    authors = st.session_state["reaction_authors"][f['id']]
+                    for icon in ["👍", "💡", "🧪"]:
+                        if authors[icon]:
+                            st.markdown(f"{icon} {', '.join(authors[icon])}")
     
                     # Comments
                     st.markdown("### 💬 Comments")
-                    comment_key = f["id"]
-                    new_comment = st.text_input("Add a comment:", key=f"comment_{comment_key}")
+                    comment_key = f['id']
+                    new_comment = st.text_input("Add comment", key=f"cmt_{comment_key}")
                     if st.button("Post", key=f"btn_{comment_key}") and new_comment:
                         st.session_state["comments"][comment_key].append({
                             "author": st.session_state["user_name"],
                             "text": new_comment,
                             "time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
                         })
-                        st.success("Comment posted!")
+                        st.success("Posted!")
                     for c in st.session_state["comments"][comment_key]:
                         st.markdown(f"- _{c['author']}_: {c['text']} ({c['time']})")
     
