@@ -581,6 +581,22 @@ with tab9:
     st.markdown("---")
     st.subheader("🧵 Design Threads + 🔍 Filters + 🏷️ Tags + ❤️ Reactions")
     projects = st.session_state["community_projects"]
+
+    # --- Filter Section ---
+    st.markdown("### 🔍 Filter Designs")
+    
+    filter_country = st.text_input("Filter by Country/Region")
+    min_load = st.number_input("Minimum Load (kN)", min_value=0.0, value=0.0, step=10.0)
+    max_load = st.number_input("Maximum Load (kN)", min_value=0.0, value=10000.0, step=10.0)
+    
+    filtered_projects = [
+        p for p in projects
+        if filter_country.lower() in p["country"].lower()
+        and min_load <= p["load"] <= max_load
+    ]
+    
+    projects = filtered_projects  # Override with filtered list
+
     
     # Sort by most reactions
     def total_reactions(pid):
