@@ -196,7 +196,7 @@ _ = translations[language]
 
 st.title(_["title"])
 
-tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs([
+tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9 = st.tabs([
     "Design Calculator",
     "Layout & Efficiency",
     "Settlement",
@@ -204,7 +204,8 @@ tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs([
     "BOQ",
     "Save / Export",
     "Project Manager",
-    "Dashboard"
+    "Dashboard",
+    "Community"
 ])
 
 with tab1:
@@ -496,7 +497,59 @@ with tab8:
     else:
         st.info("💾 Save multiple designs to compare their total cost here.")
 
-    # To the engineers who design beneath the surface — this tool is for you.
-    # Build boldly. Build sustainably. Build with clarity.
-    # – KIM
+with tab9:
+    # Initialize session storage for shared designs
+    if "community_projects" not in st.session_state:
+        st.session_state["community_projects"] = []
+    
+    st.title("🌍 Luna GroundWorks – Community")
+    st.markdown("Share your pile design with the world. Contribute local knowledge and learn from others.")
+    
+    # --- Submit New Project ---
+    st.subheader("📤 Submit a Design")
+    
+    with st.form("submit_form"):
+        name = st.text_input("Project Name")
+        country = st.text_input("Country / Region")
+        diameter = st.number_input("Pile Diameter (m)", min_value=0.2, step=0.05)
+        length = st.number_input("Pile Length (m)", min_value=1.0, step=0.5)
+        load = st.number_input("Total Load (kN)", min_value=100.0, step=10.0)
+        notes = st.text_area("Notes (optional)")
+        submitted = st.form_submit_button("🌱 Share This Design")
+    
+        if submitted:
+            design = {
+                "name": name,
+                "country": country,
+                "diameter": diameter,
+                "length": length,
+                "load": load,
+                "notes": notes,
+                "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+            }
+            st.session_state["community_projects"].append(design)
+            st.success("✅ Design shared successfully!")
+    
+    # --- View Shared Projects ---
+    st.markdown("---")
+    st.subheader("🌐 Shared Designs")
+    
+    projects = st.session_state["community_projects"]
+    
+    if not projects:
+        st.info("No community designs submitted yet. Be the first to contribute!")
+    else:
+        for i, p in enumerate(projects[::-1]):  # Show latest first
+            with st.expander(f"📌 {p['name']} ({p['country']})"):
+                st.markdown(f"**Pile Diameter:** {p['diameter']} m")
+                st.markdown(f"**Pile Length:** {p['length']} m")
+                st.markdown(f"**Total Load:** {p['load']} kN")
+                st.markdown(f"**Notes:** {p['notes'] if p['notes'] else '—'}")
+                st.caption(f"Submitted on {p['timestamp']}")
+
+# To the engineers who design beneath the surface — this tool is for you.
+# Build boldly. Build sustainably. Build with clarity.
+# – KIM
+
+
 
