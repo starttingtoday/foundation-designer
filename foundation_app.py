@@ -9,7 +9,7 @@ import math
 import matplotlib.pyplot as plt
 import pandas as pd
 import pydeck as pdk
-from collections import Counter
+from collections import Counter, defaultdict
 import uuid
 
 # --- Streamlit Config ---
