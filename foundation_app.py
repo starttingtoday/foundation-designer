@@ -693,6 +693,56 @@ with tab9:
                     for c in st.session_state["comments"][comment_key]:
                         st.markdown(f"- _{c['author']}_: {c['text']} ({c['time']})")
 
+    st.title("🗺️ Global Community Map")
+    st.markdown("### 📍 Where engineers build, share, and inspire")
+    
+    projects = st.session_state["community_projects"]
+    
+    # --- Filter Map Region ---
+    st.sidebar.markdown("### 🌐 Map Filters")
+    country_filter = st.sidebar.text_input("Filter by Country/Region")
+    tags_filter = st.sidebar.multiselect("Filter by Tags", ["Student Design", "Peer Reviewed", "Green Foundation"])
+    
+    # --- Filter logic ---
+    filtered = []
+    for p in projects:
+        tag_match = not tags_filter or any(tag in st.session_state["tags"][p["id"]] for tag in tags_filter)
+        country_match = country_filter.lower() in p["country"].lower()
+        if tag_match and country_match:
+            filtered.append(p)
+    
+    st.caption(f"Showing {len(filtered)} project(s) on the map.")
+    
+    # --- Create Map Data ---
+    if filtered:
+        df_map = pd.DataFrame(filtered)
+        df_map = df_map[df_map["lat"] != 0]  # Remove placeholder coordinates
+    
+        st.pydeck_chart(pdk.Deck(
+            initial_view_state=pdk.ViewState(
+                latitude=df_map["lat"].mean(),
+                longitude=df_map["lon"].mean(),
+                zoom=2,
+                pitch=30
+            ),
+            layers=[
+                pdk.Layer(
+                    "ScatterplotLayer",
+                    data=df_map,
+                    get_position="[lon, lat]",
+                    get_radius=20000,
+                    get_color="[200, 30, 0, 160]",
+                    pickable=True
+                )
+            ],
+            tooltip={"text": "{name} by {user}\nLoad: {load} kN"}
+        ))
+    
+        if st.checkbox("📋 Show project details"):
+            st.dataframe(df_map[["name", "country", "load", "user", "timestamp"]])
+    else:
+        st.info("No geo-tagged designs to map. Try submitting one with coordinates!")
+
 
     
 # To the engineers who design beneath the surface — this tool is for you.
