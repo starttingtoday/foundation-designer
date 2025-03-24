@@ -12,6 +12,9 @@ import pydeck as pdk
 from collections import Counter, defaultdict
 import uuid
 
+st.cache_data.clear()
+st.cache_resource.clear()
+
 # --- Streamlit Config ---
 st.set_page_config(page_title="Pile Foundation Designer", layout="centered")
 st.title("🌍 Pile Foundation Designer")
