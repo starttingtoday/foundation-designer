@@ -701,8 +701,8 @@ with tab9:
     
     # --- Filter Map Region ---
     st.sidebar.markdown("### 🌐 Map Filters")
-    country_filter = st.sidebar.text_input("Filter by Country/Region")
-    tags_filter = st.sidebar.multiselect("Filter by Tags", ["Student Design", "Peer Reviewed", "Green Foundation"])
+    country_filter = st.sidebar.text_input("Filter by Country/Region", key="geo_country_filter")
+    tags_filter = st.sidebar.multiselect("Filter by Tags", [...], key="geo_tags_filter")
     
     # --- Filter logic ---
     filtered = []
