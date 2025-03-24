@@ -499,12 +499,19 @@ with tab8:
         st.info("💾 Save multiple designs to compare their total cost here.")
 
 with tab9:
-    # Initialize session storage for shared designs
+    # Initialize session storage
     if "community_projects" not in st.session_state:
         st.session_state["community_projects"] = []
+    if "user_name" not in st.session_state:
+        st.session_state["user_name"] = "Anonymous Engineer"
     
     st.title("🌍 Luna GroundWorks – Community")
     st.markdown("Share your pile design with the world. Contribute local knowledge and learn from others.")
+    
+    # --- User Identity ---
+    st.sidebar.markdown("### 👤 Your Profile")
+    st.session_state["user_name"] = st.sidebar.text_input("Name or Alias", st.session_state["user_name"])
+    st.sidebar.caption("Your name will be shown on shared designs.")
     
     # --- Submit New Project ---
     st.subheader("📤 Submit a Design")
@@ -530,6 +537,7 @@ with tab9:
                 "length": length,
                 "load": load,
                 "notes": notes,
+                "user": st.session_state["user_name"],
                 "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
             }
             st.session_state["community_projects"].append(design)
@@ -585,6 +593,7 @@ with tab9:
                 st.markdown(f"**Pile Length:** {p['length']} m")
                 st.markdown(f"**Total Load:** {p['load']} kN")
                 st.markdown(f"**Notes:** {p['notes'] if p['notes'] else '—'}")
+                st.markdown(f"👤 Shared by: `{p['user']}`")
                 st.caption(f"Submitted on {p['timestamp']}")
 
 
