@@ -593,7 +593,8 @@ with tab9:
     for p in sorted_projects[:3]:
         st.markdown(f"**{p['name']}** by `{p['user']}` with {total_reactions(p['id'])} reactions")
     st.markdown("### 📋 All Shared Designs (No Forks Yet)")
-    
+
+    root_projects = [p for p in projects if not p.get("parent_id")]
     for root in root_projects:
         forks = [f for f in projects if f.get("parent_id") == root["id"]]
         if not forks:
