@@ -626,7 +626,7 @@ with tab9:
                     selected_tags = st.multiselect("🏷️ Add Tags", tag_options, key=f"tag_{f['id']}")
                     if selected_tags:
                         st.session_state["tags"][f['id']] = list(set(st.session_state["tags"][f['id']] + selected_tags))
-                    if st.session_state["tags"][f['id"]]:
+                    if st.session_state["tags"][f['id']]:
                         st.info("Tags: " + ", ".join(st.session_state["tags"][f['id']]))
     
                     # Reaction Details
