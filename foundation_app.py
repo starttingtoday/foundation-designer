@@ -9,6 +9,7 @@ import math
 import matplotlib.pyplot as plt
 import pandas as pd
 import pydeck as pdk
+from collections import Counter
 
 # --- Streamlit Config ---
 st.set_page_config(page_title="Pile Foundation Designer", layout="centered")
@@ -499,20 +500,13 @@ with tab8:
         st.info("💾 Save multiple designs to compare their total cost here.")
 
 with tab9:
-    # KIM GroundWorks – Community Tab (v0.4 with User Badges)
-    import streamlit as st
-    import json
-    import datetime
-    import pandas as pd
-    import pydeck as pdk
-    
     # Initialize session storage
     if "community_projects" not in st.session_state:
         st.session_state["community_projects"] = []
     if "user_name" not in st.session_state:
         st.session_state["user_name"] = "Anonymous Engineer"
     
-    st.title("🌍 KIM GroundWorks – Community")
+    st.title("🌍 GroundWorks – Community")
     st.markdown("Share your pile design with the world. Contribute local knowledge and learn from others.")
     
     # --- User Identity ---
@@ -574,6 +568,14 @@ with tab9:
     if not projects:
         st.info("No community designs submitted yet. Be the first to contribute!")
     else:
+        # Leaderboard
+        st.markdown("### 🏆 Contributor Leaderboard")
+        contributors = Counter([p["user"] for p in projects])
+        leaderboard = pd.DataFrame(contributors.items(), columns=["User", "Submissions"])
+        leaderboard["Badge"] = leaderboard["User"].apply(get_badge)
+        leaderboard = leaderboard.sort_values(by="Submissions", ascending=False)
+        st.dataframe(leaderboard, use_container_width=True)
+    
         # Filter section
         st.markdown("### 🔍 Filter Designs")
         filter_country = st.text_input("Filter by Country/Region")
