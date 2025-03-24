@@ -502,7 +502,7 @@ with tab9:
     if "community_projects" not in st.session_state:
         st.session_state["community_projects"] = []
     
-    st.title("🌍 Luna GroundWorks – Community")
+    st.title("🌍 KIM GroundWorks – Community")
     st.markdown("Share your pile design with the world. Contribute local knowledge and learn from others.")
     
     # --- Submit New Project ---
