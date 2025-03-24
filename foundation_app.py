@@ -499,19 +499,41 @@ with tab8:
         st.info("💾 Save multiple designs to compare their total cost here.")
 
 with tab9:
+    # KIM GroundWorks – Community Tab (v0.4 with User Badges)
+    import streamlit as st
+    import json
+    import datetime
+    import pandas as pd
+    import pydeck as pdk
+    
     # Initialize session storage
     if "community_projects" not in st.session_state:
         st.session_state["community_projects"] = []
     if "user_name" not in st.session_state:
         st.session_state["user_name"] = "Anonymous Engineer"
     
-    st.title("🌍 Luna GroundWorks – Community")
+    st.title("🌍 KIM GroundWorks – Community")
     st.markdown("Share your pile design with the world. Contribute local knowledge and learn from others.")
     
     # --- User Identity ---
     st.sidebar.markdown("### 👤 Your Profile")
     st.session_state["user_name"] = st.sidebar.text_input("Name or Alias", st.session_state["user_name"])
     st.sidebar.caption("Your name will be shown on shared designs.")
+    
+    # --- Badge Counter ---
+    def get_badge(user):
+        user_designs = [p for p in st.session_state["community_projects"] if p["user"] == user]
+        count = len(user_designs)
+        if count == 0:
+            return ""
+        elif count == 1:
+            return "🌱 First Design"
+        elif count < 5:
+            return "🔧 Contributor"
+        elif count < 10:
+            return "🏗️ Foundation Builder"
+        else:
+            return "🌍 Global Contributor"
     
     # --- Submit New Project ---
     st.subheader("📤 Submit a Design")
@@ -589,11 +611,12 @@ with tab9:
         st.markdown("### 📋 Project List")
         for i, p in enumerate(filtered[::-1]):  # Show latest first
             with st.expander(f"📌 {p['name']} ({p['country']})"):
+                badge = get_badge(p['user'])
                 st.markdown(f"**Pile Diameter:** {p['diameter']} m")
                 st.markdown(f"**Pile Length:** {p['length']} m")
                 st.markdown(f"**Total Load:** {p['load']} kN")
                 st.markdown(f"**Notes:** {p['notes'] if p['notes'] else '—'}")
-                st.markdown(f"👤 Shared by: `{p['user']}`")
+                st.markdown(f"👤 Shared by: `{p['user']}` {'🔹' + badge if badge else ''}")
                 st.caption(f"Submitted on {p['timestamp']}")
 
 
