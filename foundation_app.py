@@ -546,6 +546,9 @@ with tab9:
                 st.markdown(f"**Total Load:** {p['load']} kN")
                 st.markdown(f"**Notes:** {p['notes'] if p['notes'] else '—'}")
                 st.caption(f"Submitted on {p['timestamp']}")
+                
+    st.caption("🌱 Powered by engineers. Shared for the world.")
+
 
 # To the engineers who design beneath the surface — this tool is for you.
 # Build boldly. Build sustainably. Build with clarity.
