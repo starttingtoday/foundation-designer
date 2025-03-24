@@ -624,10 +624,13 @@ with tab9:
                     col1, col2, col3 = st.columns(3)
                     if col1.button(f"👍 Helpful ({r['👍']})", key=f"like_{f['id']}"):
                         r['👍'] += 1
+                        st.rerun()
                     if col2.button(f"💡 Innovative ({r['💡']})", key=f"idea_{f['id']}"):
                         r['💡'] += 1
+                        st.rerun()
                     if col3.button(f"🧪 Site-Tested ({r['🧪']})", key=f"test_{f['id']}"):
                         r['🧪'] += 1
+                        st.rerun()
     
                     # Tags
                     st.markdown("### 🏷️ Tags")
